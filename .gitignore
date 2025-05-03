@@ -1,0 +1,41 @@
+# React Frontend (client)
+client/**/node_modules/
+client/**/build/
+client/**/dist/
+client/**/.env
+client/**/.env.*
+!client/**/.env.example
+client/**/.eslintcache
+client/**/npm-debug.log*
+client/**/yarn-debug.log*
+client/**/yarn-error.log*
+client/**/coverage/
+client/**/.pnp
+client/**/.pnp.js
+
+# ASP.NET Core Backend (server)
+server/**/bin/
+server/**/obj/
+server/**/*.user
+server/**/*.suo
+server/**/*.cache
+server/**/*.pfx
+server/**/*.db
+server/**/*.sqlite
+server/**/*.db-journal
+server/**/appsettings.Development.json
+server/**/appsettings.Production.json
+server/**/appsettings.Staging.json
+!server/**/appsettings.json
+
+# IDE and OS files
+**/.vs/
+**/.vscode/
+.idea/
+**/.DS_Store
+**/Thumbs.db
+
+# General
+*.log
+*.tmp
+*.temp
