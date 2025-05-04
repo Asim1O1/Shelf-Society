@@ -9,7 +9,7 @@ using Shelf_Society.Models.Entities;
 namespace Shelf_Society.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
   private readonly ApplicationDbContext _context;

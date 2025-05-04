@@ -7,19 +7,22 @@ using Shelf_Society.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 
 // Add db context with PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// CORS configuration - update to specify your frontend URL
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins",
-        builder => builder.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader());
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
 // Add JWT Authentication
@@ -43,7 +46,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -61,11 +63,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+// CORS middleware must be first
+app.UseCors();
 
-app.UseAuthentication(); // 🔐 This MUST come before UseAuthorization()
+
+
+app.UseAuthentication();
 app.UseAuthorization();
-
-
 
 app.MapControllers();
 
