@@ -8,6 +8,7 @@ import {
 import Login from "./components/Login";
 import Register from "./components/Register";
 import ToastNotification from "./components/ToastNotification";
+import HomePage from "./components/home/homepage";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<HomePage />} />
         </Routes>
       </div>
     </Router>
