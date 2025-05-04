@@ -26,7 +26,7 @@ namespace Shelf_Society.Models.Entities
     [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Last name can only contain letters.")]
     public string LastName { get; set; } = null!;
 
-    public string Role { get; set; } = "Member"; // Member, Staff, Admin, Publishers
+    public string Role { get; set; } = "Member"; // Member, Staff, Admin,
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Add Refresh Token and its expiration properties
