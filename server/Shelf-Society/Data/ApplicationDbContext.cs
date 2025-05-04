@@ -12,4 +12,6 @@ public class ApplicationDbContext : DbContext
 
   public DbSet<User> Users { get; set; } = null!;
   public DbSet<Book> Books { get; set; } = null!;
+
+  public DbSet<Whitelist> Whitelists { get; set; } = null!;
 }

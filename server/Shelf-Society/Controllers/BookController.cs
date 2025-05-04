@@ -10,7 +10,7 @@ namespace Shelf_Society.Controllers;
 
 [ApiController]
 [Route("api/books")]
-[Authorize]
+
 public class BookController : ControllerBase
 {
   private readonly ApplicationDbContext _context;
@@ -21,11 +21,90 @@ public class BookController : ControllerBase
   }
 
   [HttpGet]
-  public async Task<ActionResult<ResponseHelper<List<BookResponseDTO>>>> GetBooks()
+  public async Task<ActionResult<ResponseHelper<PaginationHelper<BookResponseDTO>>>> GetBooks(
+     [FromQuery] int pageNumber = 1,
+     [FromQuery] int pageSize = 10,
+     [FromQuery] string? search = null,
+     [FromQuery] string? sortBy = null,
+     [FromQuery] string? genre = null,
+     [FromQuery] string? author = null,
+     [FromQuery] string? language = null,
+     [FromQuery] decimal? minPrice = null,
+     [FromQuery] decimal? maxPrice = null)
   {
-    var books = await _context.Books.ToListAsync();
+    // Start with base query
+    var query = _context.Books.AsQueryable();
 
-    var bookDtos = books.Select(book => new BookResponseDTO
+    // Apply filters if provided
+    if (!string.IsNullOrEmpty(search))
+    {
+      search = search.ToLower();
+      query = query.Where(b =>
+          b.Title.ToLower().Contains(search) ||
+          b.Author.ToLower().Contains(search) ||
+          b.Description.ToLower().Contains(search) ||
+          b.ISBN.ToLower().Contains(search));
+    }
+
+    if (!string.IsNullOrEmpty(genre))
+    {
+      query = query.Where(b => b.Genre.ToLower() == genre.ToLower());
+    }
+
+    if (!string.IsNullOrEmpty(author))
+    {
+      query = query.Where(b => b.Author.ToLower().Contains(author.ToLower()));
+    }
+
+    if (!string.IsNullOrEmpty(language))
+    {
+      query = query.Where(b => b.Language.ToLower() == language.ToLower());
+    }
+
+    if (minPrice.HasValue)
+    {
+      query = query.Where(b => b.Price >= minPrice.Value);
+    }
+
+    if (maxPrice.HasValue)
+    {
+      query = query.Where(b => b.Price <= maxPrice.Value);
+    }
+
+    // Apply sorting
+    switch (sortBy?.ToLower())
+    {
+      case "title_asc":
+        query = query.OrderBy(b => b.Title);
+        break;
+      case "title_desc":
+        query = query.OrderByDescending(b => b.Title);
+        break;
+      case "price_asc":
+        query = query.OrderBy(b => b.Price);
+        break;
+      case "price_desc":
+        query = query.OrderByDescending(b => b.Price);
+        break;
+      case "date_asc":
+        query = query.OrderBy(b => b.PublicationDate);
+        break;
+      case "date_desc":
+        query = query.OrderByDescending(b => b.PublicationDate);
+        break;
+      case "rating_desc":
+        query = query.OrderByDescending(b => b.Rating);
+        break;
+      default:
+        query = query.OrderBy(b => b.Title); // Default sorting
+        break;
+    }
+
+    // Get paginated result
+    var pagedBooks = await PaginationHelper<Book>.CreateAsync(query, pageNumber, pageSize);
+
+    // Map to DTOs
+    var bookDtos = pagedBooks.Items.Select(book => new BookResponseDTO
     {
       Id = book.Id,
       Title = book.Title,
@@ -46,11 +125,22 @@ public class BookController : ControllerBase
       ImageUrl = book.ImageUrl
     }).ToList();
 
-    return Ok(new ResponseHelper<List<BookResponseDTO>>
+    // Create final response with pagination
+    var pagedResponse = new PaginationHelper<BookResponseDTO>(
+        bookDtos,
+        pagedBooks.TotalCount,
+        pagedBooks.PageNumber,
+        pagedBooks.PageSize);
+
+    string message = pagedBooks.TotalCount > 0
+   ? "Books retrieved successfully"
+   : "No books found matching the criteria";
+
+    return Ok(new ResponseHelper<PaginationHelper<BookResponseDTO>>
     {
       Success = true,
-      Message = "Books retrieved successfully",
-      Data = bookDtos
+      Message = message,
+      Data = pagedResponse
     });
   }
 
