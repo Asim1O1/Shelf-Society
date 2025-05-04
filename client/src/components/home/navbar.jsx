@@ -53,24 +53,7 @@ const Navbar = () => {
             <span className="text-xl font-bold text-gray-900">Shelf Society</span>
           </Link>
 
-          {/* Desktop Search Bar */}
-          <div className="hidden md:block flex-grow max-w-xl mx-8">
-            <form onSubmit={handleSearch} className="relative">
-              <input
-                type="text"
-                placeholder="Search for your next favorite book"
-                className="w-full py-2 pl-4 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button
-                type="submit"
-                className="absolute right-0 top-0 h-full px-3 text-gray-500 hover:text-red-600"
-              >
-                <FiSearch className="w-5 h-5" />
-              </button>
-            </form>
-          </div>
+         
 
           {/* Desktop Nav Icons */}
           <div className="hidden md:flex items-center space-x-6">
