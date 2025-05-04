@@ -106,34 +106,60 @@ const HomePage = () => {
       )}
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-red-600 to-red-700 text-white py-16 md:py-20">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center">
+      <section className="bg-white text-black py-20 md:py-24">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="md:w-1/2 mb-10 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Explore our collection of top quality books for all readers
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                Explore our collection of{" "}
+                <span className="text-red-600">top quality</span> books for all
+                readers
               </h1>
-              <p className="text-xl mb-8 text-white">
+              <p className="text-xl mb-10 text-gray-600 max-w-xl">
                 Browse by genre, author, or special promotions!
               </p>
 
               {/* Hero Search Bar */}
-              <div className="flex w-full max-w-lg">
+              <div className="flex w-full max-w-lg shadow-lg">
                 <input
                   type="text"
                   placeholder="Search for your next favorite book"
-                  className="flex-grow py-3 px-4 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-300 text-gray-800"
+                  className="flex-grow py-4 px-6 rounded-l-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-300 text-gray-800 bg-gray-50"
                 />
-                <button className="bg-white text-red-600 hover:bg-gray-100 px-6 py-3 rounded-r-lg font-medium transition duration-200">
-                  Go
+                <button className="bg-red-600 text-white hover:bg-red-700 px-8 py-4 rounded-r-lg font-medium transition duration-300 flex items-center">
+                  <span>Go</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 ml-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </button>
+              </div>
+
+              <div className="flex gap-4 mt-10">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-600">
+                  #Fiction
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-600">
+                  #Biography
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-600">
+                  #Science
+                </span>
               </div>
             </div>
             <div className="md:w-1/2 flex justify-center md:justify-end">
               <img
-                src="/images/reader-illustration.png"
-                alt="Person reading a book"
-                className="w-2/3 md:w-auto max-h-72 md:max-h-96"
+                src="https://images.unsplash.com/photo-1642197398012-e04b34d2bae6?q=80&w=3387&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                alt="Person browsing books in library"
+                className="rounded-2xl shadow-2xl object-cover h-96 w-full max-w-md"
               />
             </div>
           </div>
