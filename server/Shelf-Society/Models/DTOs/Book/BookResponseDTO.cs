@@ -21,4 +21,7 @@ public class BookResponseDTO
   public DateTime? UpdatedAt { get; set; }
   public bool IsAvailable { get; set; }
   public string ImageUrl { get; set; }
+
+
+  public List<BookImageDTO> AdditionalImages { get; set; } = new List<BookImageDTO>();
 }

@@ -14,4 +14,8 @@ public class UpdateBookDTO
   public string Publisher { get; set; }
   public string ImageUrl { get; set; }
 
+
+  public List<BookImageDTO>? AdditionalImages { get; set; }
+  public List<int>? RemoveImageIds { get; set; }
+
 }

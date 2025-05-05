@@ -14,8 +14,9 @@ public class CreateBookDTO
   public string Genre { get; set; }
   public string Language { get; set; }
   public int StockQuantity { get; set; }
-  public DateTime PublicationDate { get; set; }
+  public DateTimeOffset PublicationDate { get; set; }
   public string Publisher { get; set; }
   public string ImageUrl { get; set; }
 
+  public List<BookImageDTO>? AdditionalImages { get; set; }
 }

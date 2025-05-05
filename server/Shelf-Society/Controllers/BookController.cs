@@ -33,7 +33,9 @@ public class BookController : ControllerBase
      [FromQuery] decimal? maxPrice = null)
   {
     // Start with base query
-    var query = _context.Books.AsQueryable();
+    var query = _context.Books
+     .Include(b => b.AdditionalImages) // Include additional images
+     .AsQueryable();
 
     // Apply filters if provided
     if (!string.IsNullOrEmpty(search))
@@ -122,7 +124,15 @@ public class BookController : ControllerBase
       CreatedAt = book.CreatedAt,
       UpdatedAt = book.UpdatedAt,
       IsAvailable = book.IsAvailable,
-      ImageUrl = book.ImageUrl
+      ImageUrl = book.ImageUrl,
+
+      AdditionalImages = book.AdditionalImages.Select(img => new BookImageDTO
+      {
+        Id = img.Id,
+        ImageUrl = img.ImageUrl,
+        Caption = img.Caption,
+        DisplayOrder = img.DisplayOrder
+      }).ToList()
     }).ToList();
 
     // Create final response with pagination
@@ -147,7 +157,9 @@ public class BookController : ControllerBase
   [HttpGet("{id}")]
   public async Task<ActionResult<ResponseHelper<BookResponseDTO>>> GetBookById(int id)
   {
-    var book = await _context.Books.FindAsync(id);
+    var book = await _context.Books
+       .Include(b => b.AdditionalImages) // Include additional images
+       .FirstOrDefaultAsync(b => b.Id == id);
     if (book == null)
     {
       return NotFound(new ResponseHelper<BookResponseDTO>
@@ -176,7 +188,14 @@ public class BookController : ControllerBase
       CreatedAt = book.CreatedAt,
       UpdatedAt = book.UpdatedAt,
       IsAvailable = book.IsAvailable,
-      ImageUrl = book.ImageUrl
+      ImageUrl = book.ImageUrl,
+      AdditionalImages = book.AdditionalImages.Select(img => new BookImageDTO
+      {
+        Id = img.Id,
+        ImageUrl = img.ImageUrl,
+        Caption = img.Caption,
+        DisplayOrder = img.DisplayOrder
+      }).ToList()
     };
 
     return Ok(new ResponseHelper<BookResponseDTO>
@@ -203,12 +222,18 @@ public class BookController : ControllerBase
       Genre = dto.Genre,
       Language = dto.Language,
       StockQuantity = dto.StockQuantity,
-      PublicationDate = dto.PublicationDate,
+      PublicationDate = dto.PublicationDate.UtcDateTime,
       Publisher = dto.Publisher,
       ImageUrl = dto.ImageUrl,
       CreatedAt = DateTime.UtcNow,
       IsAvailable = true,
-      Rating = 0
+      Rating = 0,
+      AdditionalImages = dto.AdditionalImages?.Select(img => new BookImage
+      {
+        ImageUrl = img.ImageUrl,
+        Caption = img.Caption,
+        DisplayOrder = img.DisplayOrder
+      }).ToList() ?? new List<BookImage>()
     };
 
     _context.Books.Add(book);
@@ -232,7 +257,14 @@ public class BookController : ControllerBase
       CreatedAt = book.CreatedAt,
       UpdatedAt = book.UpdatedAt,
       IsAvailable = book.IsAvailable,
-      ImageUrl = book.ImageUrl
+      ImageUrl = book.ImageUrl,
+      AdditionalImages = book.AdditionalImages.Select(img => new BookImageDTO
+      {
+        Id = img.Id,
+        ImageUrl = img.ImageUrl,
+        Caption = img.Caption,
+        DisplayOrder = img.DisplayOrder
+      }).ToList()
     };
 
     return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, new ResponseHelper<BookResponseDTO>
@@ -247,7 +279,9 @@ public class BookController : ControllerBase
   [Authorize(Roles = "Admin")]
   public async Task<ActionResult<ResponseHelper<BookResponseDTO>>> UpdateBook(int id, UpdateBookDTO dto)
   {
-    var book = await _context.Books.FindAsync(id);
+    var book = await _context.Books
+      .Include(b => b.AdditionalImages) // Include additional images
+      .FirstOrDefaultAsync(b => b.Id == id);
     if (book == null)
     {
       return NotFound(new ResponseHelper<BookResponseDTO>
@@ -277,6 +311,44 @@ public class BookController : ControllerBase
       book.Publisher = dto.Publisher;
     if (!string.IsNullOrEmpty(dto.ImageUrl))
       book.ImageUrl = dto.ImageUrl;
+    if (dto.AdditionalImages != null && dto.AdditionalImages.Count > 0)
+    {
+      foreach (var newImage in dto.AdditionalImages)
+      {
+        // Check if the image already exists by ID
+        if (newImage.Id > 0 && book.AdditionalImages.Any(img => img.Id == newImage.Id))
+        {
+          // Update existing image
+          var existingImage = book.AdditionalImages.First(img => img.Id == newImage.Id);
+          existingImage.ImageUrl = newImage.ImageUrl;
+          existingImage.Caption = newImage.Caption;
+          existingImage.DisplayOrder = newImage.DisplayOrder;
+        }
+        else
+        {
+          // Add new image
+          book.AdditionalImages.Add(new BookImage
+          {
+            ImageUrl = newImage.ImageUrl,
+            Caption = newImage.Caption,
+            DisplayOrder = newImage.DisplayOrder
+          });
+        }
+      }
+    }
+
+    // Remove images if IDs are provided in RemoveImageIds
+    if (dto.RemoveImageIds != null && dto.RemoveImageIds.Count > 0)
+    {
+      foreach (var imageId in dto.RemoveImageIds)
+      {
+        var imageToRemove = book.AdditionalImages.FirstOrDefault(i => i.Id == imageId);
+        if (imageToRemove != null)
+        {
+          _context.BookImages.Remove(imageToRemove);
+        }
+      }
+    }
 
     book.UpdatedAt = DateTime.UtcNow;
     await _context.SaveChangesAsync();
@@ -299,7 +371,14 @@ public class BookController : ControllerBase
       CreatedAt = book.CreatedAt,
       UpdatedAt = book.UpdatedAt,
       IsAvailable = book.IsAvailable,
-      ImageUrl = book.ImageUrl
+      ImageUrl = book.ImageUrl,
+      AdditionalImages = book.AdditionalImages.Select(img => new BookImageDTO
+      {
+        Id = img.Id,
+        ImageUrl = img.ImageUrl,
+        Caption = img.Caption,
+        DisplayOrder = img.DisplayOrder
+      }).ToList()
     };
 
     return Ok(new ResponseHelper<BookResponseDTO>
@@ -314,7 +393,9 @@ public class BookController : ControllerBase
   [Authorize(Roles = "Admin")]
   public async Task<ActionResult<ResponseHelper<object>>> DeleteBook(int id)
   {
-    var book = await _context.Books.FindAsync(id);
+    var book = await _context.Books
+     .Include(b => b.AdditionalImages)
+     .FirstOrDefaultAsync(b => b.Id == id);
     if (book == null)
     {
       return NotFound(new ResponseHelper<object>

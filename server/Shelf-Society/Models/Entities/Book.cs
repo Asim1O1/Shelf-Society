@@ -6,7 +6,7 @@ public class Book
 {
   public int Id { get; set; }
   public string Title { get; set; } = null!;
-  public string Author { get; set; }= null!;
+  public string Author { get; set; } = null!;
   public string ISBN { get; set; } = null!;
   public string Description { get; set; } = null!;
   public decimal Price { get; set; } = 0.0m;
@@ -21,6 +21,9 @@ public class Book
   public DateTime? UpdatedAt { get; set; }
   public bool IsAvailable { get; set; }
   public string ImageUrl { get; set; }
+
+
+  public ICollection<BookImage> AdditionalImages { get; set; } = new List<BookImage>();
 
 }
 
