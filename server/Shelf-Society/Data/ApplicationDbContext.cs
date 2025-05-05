@@ -15,6 +15,8 @@ public class ApplicationDbContext : DbContext
   public DbSet<Book> Books { get; set; } = null!;
   public DbSet<BookImage> BookImages { get; set; } = null!;
   public DbSet<Whitelist> Whitelists { get; set; } = null!;
+  public DbSet<Cart> Carts { get; set; } = null!;
+  public DbSet<CartItem> CartItems { get; set; } = null!;
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
@@ -26,6 +28,26 @@ public class ApplicationDbContext : DbContext
         .WithMany(b => b.AdditionalImages)
         .HasForeignKey(bi => bi.BookId)
         .OnDelete(DeleteBehavior.Cascade);
+
+    // Configure Cart relationships
+    modelBuilder.Entity<Cart>()
+        .HasOne(c => c.User)
+        .WithOne()
+        .HasForeignKey<Cart>(c => c.UserId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    // Configure CartItem relationships
+    modelBuilder.Entity<CartItem>()
+        .HasOne(ci => ci.Cart)
+        .WithMany(c => c.Items)
+        .HasForeignKey(ci => ci.CartId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<CartItem>()
+        .HasOne(ci => ci.Book)
+        .WithMany()
+        .HasForeignKey(ci => ci.BookId)
+        .OnDelete(DeleteBehavior.Restrict);
 
     // Add DateTime converter for all DateTime properties to ensure UTC
     foreach (var entityType in modelBuilder.Model.GetEntityTypes())
