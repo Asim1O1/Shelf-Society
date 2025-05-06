@@ -42,60 +42,61 @@ const BookCard = ({ book }) => {
   };
 
   return (
-    <Link to={`/books/${book.id}`}>
-      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg h-full flex flex-col">
-        <div className="relative pt-[140%]">
+    <Link 
+      to={`/books/${book.id}`}
+      className="group block h-full"
+      aria-label={`View details for ${book.title} by ${book.author}`}
+    >
+      <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col overflow-hidden border border-gray-100">
+        <div className="relative pt-[140%] overflow-hidden">
           {book.onSale && (
-            <div className="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 font-bold text-sm z-10">
-              ON SALE
+            <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1.5 font-bold text-sm z-10 rounded-full shadow-md">
+              {book.discountPercentage}% OFF
             </div>
           )}
-          <img
-            src={
-              book.imageUrl ||
-              "https://via.placeholder.com/300x450?text=No+Image"
-            }
-            alt={book.title}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <div className="absolute inset-0 bg-gray-100">
+            <img
+              src={book.imageUrl || "https://via.placeholder.com/300x450?text=No+Image"}
+              alt={book.title}
+              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
+          </div>
         </div>
 
         <div className="p-4 flex flex-col flex-grow">
-          <h3 className="text-lg font-semibold line-clamp-2 mb-1">
-            {book.title}
-          </h3>
-          <p className="text-gray-600 text-sm mb-2">{book.author}</p>
+          <div className="mb-2">
+            <h3 className="text-lg font-semibold line-clamp-2 text-gray-900 group-hover:text-red-600 transition-colors">
+              {book.title}
+            </h3>
+            <p className="text-gray-600 text-sm mt-1">{book.author}</p>
+          </div>
 
           <div className="mt-auto">
-            <div className="flex items-center justify-between mb-3">
-              <div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
                 {hasDiscount ? (
-                  <div className="flex items-center">
-                    <span className="text-gray-500 line-through text-sm mr-2">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 line-through text-sm">
                       ${book.price.toFixed(2)}
                     </span>
-                    <span className="text-red-600 font-bold">
+                    <span className="text-red-600 font-bold text-lg">
                       ${discountedPrice}
                     </span>
                   </div>
                 ) : (
-                  <span className="font-semibold">
+                  <span className="font-bold text-lg text-gray-900">
                     ${book.price.toFixed(2)}
                   </span>
                 )}
-
-                {hasDiscount && (
-                  <div className="text-xs text-green-600 font-semibold mt-1">
-                    Save {book.discountPercentage}%
-                  </div>
-                )}
               </div>
 
-              <div className="flex space-x-2">
+              <div className="flex space-x-3">
                 <button
                   onClick={handleAddToWhitelist}
-                  className="text-gray-700 hover:text-red-500"
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                   title="Add to Whitelist"
+                  aria-label="Add to Whitelist"
                 >
                   <svg
                     className="w-5 h-5"
@@ -115,8 +116,9 @@ const BookCard = ({ book }) => {
 
                 <button
                   onClick={handleAddToCart}
-                  className="text-gray-700 hover:text-red-500"
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                   title="Add to Cart"
+                  aria-label="Add to Cart"
                 >
                   <svg
                     className="w-5 h-5"
