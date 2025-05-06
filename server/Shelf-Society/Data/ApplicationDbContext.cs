@@ -17,6 +17,8 @@ public class ApplicationDbContext : DbContext
   public DbSet<Whitelist> Whitelists { get; set; } = null!;
   public DbSet<Cart> Carts { get; set; } = null!;
   public DbSet<CartItem> CartItems { get; set; } = null!;
+  public DbSet<Order> Orders { get; set; } = null!;
+  public DbSet<OrderItem> OrderItems { get; set; } = null!;
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
@@ -47,6 +49,27 @@ public class ApplicationDbContext : DbContext
         .HasOne(ci => ci.Book)
         .WithMany()
         .HasForeignKey(ci => ci.BookId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+
+    // Configure Order relationships
+    modelBuilder.Entity<Order>()
+        .HasOne(o => o.User)
+        .WithMany()
+        .HasForeignKey(o => o.UserId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    // Configure OrderItem relationships
+    modelBuilder.Entity<OrderItem>()
+        .HasOne(oi => oi.Order)
+        .WithMany(o => o.Items)
+        .HasForeignKey(oi => oi.OrderId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<OrderItem>()
+        .HasOne(oi => oi.Book)
+        .WithMany()
+        .HasForeignKey(oi => oi.BookId)
         .OnDelete(DeleteBehavior.Restrict);
 
     // Add DateTime converter for all DateTime properties to ensure UTC
