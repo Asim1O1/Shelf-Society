@@ -5,55 +5,97 @@ import {
   Routes,
   useNavigate,
 } from "react-router-dom";
+
+// Auth Components
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
+
+// Public Pages
 import HomePage from "./pages/public/HomePage";
+import BooksPage from "./pages/public/BooksPage";
 
-import BookForm from "./components/admin/BookForm";
-import ToastNotification from "./components/common/ToastNotification";
+// User Pages
+import BookDetailPage from "./pages/User/BookDetail";
+import CheckoutPage from "./pages/User/CheckOutPage";
+import OrderConfirmationPage from "./pages/User/OrderConfirmationPage";
+import WhitelistPage from "./pages/User/Whitelists";
 
-import CreateAnnouncement from "./components/admin/CreateAnnouncement";
-import CreateDiscount from "./components/admin/CreateDiscount";
-import CreateStaff from "./components/admin/CreateStaff";
-import EditAnnouncement from "./components/admin/EditAnnouncementPage";
-import EditDiscount from "./components/admin/EditDiscount";
-import CartPage from "./components/cart/CartPage";
+// Admin Pages
 import AdminBookManagePage from "./pages/admin/AdminBookManagePage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AnnouncementManagement from "./pages/admin/AnnounceManagement";
 import DiscountManagement from "./pages/admin/DiscountManagement";
 import StaffManagement from "./pages/admin/StaffManagement";
-import BooksPage from "./pages/public/BooksPage";
-import BookDetailPage from "./pages/User/BookDetail";
-import CheckoutPage from "./pages/User/CheckOutPage";
-import OrderConfirmationPage from "./pages/User/OrderConfirmationPage";
-import WhitelistPage from "./pages/User/Whitelists";
+
+// Admin Components
+import BookForm from "./components/admin/BookForm";
+import CreateAnnouncement from "./components/admin/CreateAnnouncement";
+import CreateDiscount from "./components/admin/CreateDiscount";
+import CreateStaff from "./components/admin/CreateStaff";
+import EditAnnouncement from "./components/admin/EditAnnouncementPage";
+import EditDiscount from "./components/admin/EditDiscount";
+
+// Common Components
+import CartPage from "./components/cart/CartPage";
+import ToastNotification from "./components/common/ToastNotification";
+
+// Utils and Stores
 import useAuthStore from "./stores/useAuthStore";
 import ProtectedRoute, { AdminRoute } from "./utils/ProtectRoute";
 
-// Role-based redirect component
+// Route Constants
+const ROUTES = {
+  // Auth Routes
+  LOGIN: "/login",
+  REGISTER: "/register",
+
+  // Public Routes
+  HOME: "/",
+  BOOKS: "/books",
+  BOOK_DETAIL: "/books/:id",
+
+  // User Routes
+  WHITELIST: "/whitelist",
+  PROFILE: "/profile",
+  MY_ORDERS: "/my-orders",
+  CART: "/cart",
+  CHECKOUT: "/checkout",
+  ORDER_CONFIRMATION: "/order-confirmation/:id",
+
+  // Admin Routes
+  ADMIN: "/admin",
+  ADMIN_BOOKS: "/admin/books",
+  ADMIN_BOOKS_CREATE: "/admin/books/create",
+  ADMIN_BOOKS_EDIT: "/admin/books/edit/:id",
+  ADMIN_STAFF: "/admin/staff",
+  ADMIN_STAFF_CREATE: "/admin/staff/create",
+  ADMIN_DISCOUNTS: "/admin/discounts",
+  ADMIN_DISCOUNTS_CREATE: "/admin/discounts/create",
+  ADMIN_DISCOUNTS_EDIT: "/admin/discounts/edit/:id",
+  ADMIN_ANNOUNCEMENTS: "/admin/announcements",
+  ADMIN_ANNOUNCEMENTS_CREATE: "/admin/announcements/create",
+  ADMIN_ANNOUNCEMENTS_EDIT: "/admin/announcements/edit/:id",
+};
+
+/**
+ * Role-based redirect component that handles authentication and role-based routing
+ */
 const RoleRedirect = () => {
   const { isAuthenticated, user } = useAuthStore();
-  console.log("The is authenticated is", isAuthenticated, user);
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("RoleRedirect useEffect triggered");
     if (isAuthenticated) {
-      // If user is admin, redirect to admin dashboard
       if (user?.role === "Admin") {
-        navigate("/admin", { replace: true });
+        navigate(ROUTES.ADMIN, { replace: true });
       } else {
-        // If user is a regular member, redirect to homepage
-        navigate("/", { replace: true });
+        navigate(ROUTES.HOME, { replace: true });
       }
     } else {
-      // If not authenticated, redirect to login
-      navigate("/login", { replace: true });
+      navigate(ROUTES.LOGIN, { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 
-  // Return loading indicator while redirecting
   return (
     <div className="flex justify-center items-center h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -61,10 +103,12 @@ const RoleRedirect = () => {
   );
 };
 
+/**
+ * Main App component that handles routing and authentication
+ */
 function App() {
-  const { isAuthenticated, user, init } = useAuthStore();
+  const { isAuthenticated, init } = useAuthStore();
 
-  // Initialize auth store when app loads
   useEffect(() => {
     init();
   }, [init]);
@@ -76,40 +120,34 @@ function App() {
         <Routes>
           {/* Auth Routes */}
           <Route
-            path="/login"
+            path={ROUTES.LOGIN}
             element={isAuthenticated ? <RoleRedirect /> : <Login />}
           />
           <Route
-            path="/register"
+            path={ROUTES.REGISTER}
             element={isAuthenticated ? <RoleRedirect /> : <Register />}
           />
 
           {/* Public Routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/books" element={<BooksPage />} />
-          <Route path="/books/:id" element={<BookDetailPage />} />
+          <Route path={ROUTES.HOME} element={<HomePage />} />
+          <Route path={ROUTES.BOOKS} element={<BooksPage />} />
+          <Route path={ROUTES.BOOK_DETAIL} element={<BookDetailPage />} />
 
           {/* Member Routes (Protected) */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/whitelist" element={<WhitelistPage />} />
-            <Route path="/profile" element={<div>Member Profile Page</div>} />
-            <Route path="/my-orders" element={<div>My Orders Page</div>} />
-            <Route path="/whitelist" element={<div>Whitelist Page</div>} />
-            <Route path="/cart" element={<CartPage />} /> {/* Add this line */}
-            <Route path="/checkout" element={<CheckoutPage />} />{" "}
+            <Route path={ROUTES.WHITELIST} element={<WhitelistPage />} />
+            <Route path={ROUTES.PROFILE} element={<div>Member Profile Page</div>} />
+            <Route path={ROUTES.MY_ORDERS} element={<div>My Orders Page</div>} />
+            <Route path={ROUTES.CART} element={<CartPage />} />
+            <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
             <Route
-              path="/order-confirmation/:id"
+              path={ROUTES.ORDER_CONFIRMATION}
               element={<OrderConfirmationPage />}
-            />{" "}
-            {/* Add this line */}
-            <Route
-              path="/order-confirmation/:id"
-              element={<div>Order Confirmation Page</div>}
             />
           </Route>
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminRoute />}>
+          <Route path={ROUTES.ADMIN} element={<AdminRoute />}>
             <Route index element={<AdminDashboard />} />
             <Route path="books" element={<AdminBookManagePage />} />
             <Route path="books/create" element={<BookForm />} />
@@ -118,7 +156,6 @@ function App() {
             {/* Staff Management Routes */}
             <Route path="staff" element={<StaffManagement />} />
             <Route path="staff/create" element={<CreateStaff />} />
-            {/* <Route path="staff/edit/:id" element={<EditStaff />} /> */}
 
             {/* Discount Management Routes */}
             <Route path="discounts" element={<DiscountManagement />} />
@@ -127,18 +164,8 @@ function App() {
 
             {/* Announcement Management Routes */}
             <Route path="announcements" element={<AnnouncementManagement />} />
-            <Route
-              path="announcements/create"
-              element={<CreateAnnouncement />}
-            />
-            <Route
-              path="announcements/edit/:id"
-              element={<EditAnnouncement />}
-            />
-
-            {/* Order Management Routes */}
-            {/* <Route path="orders" element={<OrderManagement />} />
-            <Route path="orders/:id" element={<OrderDetail />} /> */}
+            <Route path="announcements/create" element={<CreateAnnouncement />} />
+            <Route path="announcements/edit/:id" element={<EditAnnouncement />} />
           </Route>
 
           {/* Role-Based Redirection Route */}
