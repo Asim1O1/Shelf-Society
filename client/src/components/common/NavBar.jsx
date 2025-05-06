@@ -58,40 +58,7 @@ const Navbar = () => {
               <span className="text-xl font-bold text-gray-900">Shelf Society</span>
             </Link>
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex space-x-8">
-              <Link
-                to="/"
-                className={`font-medium text-sm transition-colors ${
-                  isActive("/")
-                    ? "text-red-500"
-                    : "text-gray-600 hover:text-red-500"
-                }`}
-              >
-                Home
-              </Link>
-              <Link
-                to="/books"
-                className={`font-medium text-sm transition-colors ${
-                  isActive("/books")
-                    ? "text-red-500"
-                    : "text-gray-600 hover:text-red-500"
-                }`}
-              >
-                Books
-              </Link>
-              <Link
-                to="/whitelist"
-                className={`font-medium text-sm transition-colors ${
-                  isActive("/whitelist")
-                    ? "text-red-500"
-                    : "text-gray-600 hover:text-red-500"
-                }`}
-              >
-                Whitelist
-              </Link>
-              {isAuthenticated && user?.role === "Admin" && (
-                <Link
+           
                   to="/admin"
                   className={`font-medium text-sm transition-colors ${
                     isActive("/admin")
