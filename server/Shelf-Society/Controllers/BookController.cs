@@ -22,20 +22,20 @@ public class BookController : ControllerBase
 
   [HttpGet]
   public async Task<ActionResult<ResponseHelper<PaginationHelper<BookResponseDTO>>>> GetBooks(
-     [FromQuery] int pageNumber = 1,
-     [FromQuery] int pageSize = 10,
-     [FromQuery] string? search = null,
-     [FromQuery] string? sortBy = null,
-     [FromQuery] string? genre = null,
-     [FromQuery] string? author = null,
-     [FromQuery] string? language = null,
-     [FromQuery] decimal? minPrice = null,
-     [FromQuery] decimal? maxPrice = null)
+      [FromQuery] int pageNumber = 1,
+      [FromQuery] int pageSize = 10,
+      [FromQuery] string? search = null,
+      [FromQuery] string? sortBy = null,
+      [FromQuery] string? genre = null,
+      [FromQuery] string? author = null,
+      [FromQuery] string? language = null,
+      [FromQuery] decimal? minPrice = null,
+      [FromQuery] decimal? maxPrice = null)
   {
     // Start with base query
     var query = _context.Books
-     .Include(b => b.AdditionalImages) // Include additional images
-     .AsQueryable();
+    .Include(b => b.AdditionalImages) // Include additional images
+    .AsQueryable();
 
     // Apply filters if provided
     if (!string.IsNullOrEmpty(search))
@@ -105,6 +105,12 @@ public class BookController : ControllerBase
     // Get paginated result
     var pagedBooks = await PaginationHelper<Book>.CreateAsync(query, pageNumber, pageSize);
 
+    // Get active discounts
+    var now = DateTime.UtcNow;
+    var activeDiscounts = await _context.Discounts
+        .Where(d => d.StartDate <= now && d.EndDate >= now)
+        .ToDictionaryAsync(d => d.BookId, d => d);
+    // Map to DTOs
     // Map to DTOs
     var bookDtos = pagedBooks.Items.Select(book => new BookResponseDTO
     {
@@ -126,6 +132,11 @@ public class BookController : ControllerBase
       IsAvailable = book.IsAvailable,
       ImageUrl = book.ImageUrl,
 
+      // Add these discount properties:
+      DiscountPercentage = activeDiscounts.ContainsKey(book.Id) ? activeDiscounts[book.Id].DiscountPercentage : null,
+      OnSale = activeDiscounts.ContainsKey(book.Id) && activeDiscounts[book.Id].OnSale,
+      DiscountEndDate = activeDiscounts.ContainsKey(book.Id) ? activeDiscounts[book.Id].EndDate : null,
+
       AdditionalImages = book.AdditionalImages.Select(img => new BookImageDTO
       {
         Id = img.Id,
@@ -143,8 +154,8 @@ public class BookController : ControllerBase
         pagedBooks.PageSize);
 
     string message = pagedBooks.TotalCount > 0
-   ? "Books retrieved successfully"
-   : "No books found matching the criteria";
+  ? "Books retrieved successfully"
+  : "No books found matching the criteria";
 
     return Ok(new ResponseHelper<PaginationHelper<BookResponseDTO>>
     {
@@ -170,6 +181,11 @@ public class BookController : ControllerBase
       });
     }
 
+    // Check for active discount
+    var now = DateTime.UtcNow;
+    var activeDiscount = await _context.Discounts
+        .FirstOrDefaultAsync(d => d.BookId == id && d.StartDate <= now && d.EndDate >= now);
+
     var bookDto = new BookResponseDTO
     {
       Id = book.Id,
@@ -189,6 +205,12 @@ public class BookController : ControllerBase
       UpdatedAt = book.UpdatedAt,
       IsAvailable = book.IsAvailable,
       ImageUrl = book.ImageUrl,
+
+      // Add discount information
+      DiscountPercentage = activeDiscount?.DiscountPercentage,
+      OnSale = activeDiscount != null && activeDiscount.OnSale,
+      DiscountEndDate = activeDiscount?.EndDate,
+
       AdditionalImages = book.AdditionalImages.Select(img => new BookImageDTO
       {
         Id = img.Id,
@@ -205,7 +227,6 @@ public class BookController : ControllerBase
       Data = bookDto
     });
   }
-
   [HttpPost]
 
   [Authorize(Roles = "Admin")]

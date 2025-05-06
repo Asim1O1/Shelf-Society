@@ -20,6 +20,10 @@ public class ApplicationDbContext : DbContext
   public DbSet<Order> Orders { get; set; } = null!;
   public DbSet<OrderItem> OrderItems { get; set; } = null!;
 
+  public DbSet<Discount> Discounts { get; set; } = null!;
+  // Add to ApplicationDbContext.cs
+  public DbSet<Announcement> Announcements { get; set; } = null!;
+
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
@@ -71,6 +75,12 @@ public class ApplicationDbContext : DbContext
         .WithMany()
         .HasForeignKey(oi => oi.BookId)
         .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Discount>()
+.HasOne(d => d.Book)
+.WithOne(b => b.ActiveDiscount)
+.HasForeignKey<Discount>(d => d.BookId)
+.OnDelete(DeleteBehavior.Cascade);
 
     // Add DateTime converter for all DateTime properties to ensure UTC
     foreach (var entityType in modelBuilder.Model.GetEntityTypes())

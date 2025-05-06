@@ -22,7 +22,7 @@ public class Book
   public bool IsAvailable { get; set; }
   public string ImageUrl { get; set; }
 
-
+  public virtual Discount ActiveDiscount { get; set; }
   public ICollection<BookImage> AdditionalImages { get; set; } = new List<BookImage>();
 
 }
