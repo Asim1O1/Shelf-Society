@@ -1,9 +1,12 @@
 import React from "react";
-import Navbar from "../components/common/NavBar";
+import OnSaleBooks from "../../components/book/OnSaleBook";
+import AnnouncementBanner from "../../components/common/AnnouncementBanner";
+import Navbar from "../../components/common/NavBar";
 
 const HomePage = () => {
   return (
     <div className="min-h-screen bg-white">
+      <AnnouncementBanner />
       <Navbar />
 
       {/* Hero Section */}
@@ -58,6 +61,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+      <OnSaleBooks />
 
       {/* Genres Section */}
       <section className="py-16 bg-white">

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import AdminSidebar from "../components/admin/AdminSidebar";
-import StatCard from "../components/admin/StatCard";
-import useAuthStore from "../stores/useAuthStore";
-import useBookStore from "../stores/useBookStore";
+import AdminSidebar from "../../components/admin/AdminSidebar";
+import StatCard from "../../components/admin/StatCard";
+import useAuthStore from "../../stores/useAuthStore";
+import useBookStore from "../../stores/useBookStore";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();

@@ -7,14 +7,27 @@ import {
 } from "react-router-dom";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/public/HomePage";
 
 import BookForm from "./components/admin/BookForm";
 import ToastNotification from "./components/common/ToastNotification";
 
-import AdminBookManagePage from "./pages/AdminBookManagePage";
-import AdminDashboard from "./pages/AdminDashboard";
-
+import CreateAnnouncement from "./components/admin/CreateAnnouncement";
+import CreateDiscount from "./components/admin/CreateDiscount";
+import CreateStaff from "./components/admin/CreateStaff";
+import EditAnnouncement from "./components/admin/EditAnnouncementPage";
+import EditDiscount from "./components/admin/EditDiscount";
+import CartPage from "./components/cart/CartPage";
+import AdminBookManagePage from "./pages/admin/AdminBookManagePage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AnnouncementManagement from "./pages/admin/AnnounceManagement";
+import DiscountManagement from "./pages/admin/DiscountManagement";
+import StaffManagement from "./pages/admin/StaffManagement";
+import BooksPage from "./pages/public/BooksPage";
+import BookDetailPage from "./pages/User/BookDetail";
+import CheckoutPage from "./pages/User/CheckOutPage";
+import OrderConfirmationPage from "./pages/User/OrderConfirmationPage";
+import WhitelistPage from "./pages/User/Whitelists";
 import useAuthStore from "./stores/useAuthStore";
 import ProtectedRoute, { AdminRoute } from "./utils/ProtectRoute";
 
@@ -73,11 +86,26 @@ function App() {
 
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/books" element={<BooksPage />} />
+          <Route path="/books/:id" element={<BookDetailPage />} />
 
           {/* Member Routes (Protected) */}
           <Route element={<ProtectedRoute />}>
+            <Route path="/whitelist" element={<WhitelistPage />} />
             <Route path="/profile" element={<div>Member Profile Page</div>} />
             <Route path="/my-orders" element={<div>My Orders Page</div>} />
+            <Route path="/whitelist" element={<div>Whitelist Page</div>} />
+            <Route path="/cart" element={<CartPage />} /> {/* Add this line */}
+            <Route path="/checkout" element={<CheckoutPage />} />{" "}
+            <Route
+              path="/order-confirmation/:id"
+              element={<OrderConfirmationPage />}
+            />{" "}
+            {/* Add this line */}
+            <Route
+              path="/order-confirmation/:id"
+              element={<div>Order Confirmation Page</div>}
+            />
           </Route>
 
           {/* Admin Routes */}
@@ -86,6 +114,31 @@ function App() {
             <Route path="books" element={<AdminBookManagePage />} />
             <Route path="books/create" element={<BookForm />} />
             <Route path="books/edit/:id" element={<BookForm />} />
+
+            {/* Staff Management Routes */}
+            <Route path="staff" element={<StaffManagement />} />
+            <Route path="staff/create" element={<CreateStaff />} />
+            {/* <Route path="staff/edit/:id" element={<EditStaff />} /> */}
+
+            {/* Discount Management Routes */}
+            <Route path="discounts" element={<DiscountManagement />} />
+            <Route path="discounts/create" element={<CreateDiscount />} />
+            <Route path="discounts/edit/:id" element={<EditDiscount />} />
+
+            {/* Announcement Management Routes */}
+            <Route path="announcements" element={<AnnouncementManagement />} />
+            <Route
+              path="announcements/create"
+              element={<CreateAnnouncement />}
+            />
+            <Route
+              path="announcements/edit/:id"
+              element={<EditAnnouncement />}
+            />
+
+            {/* Order Management Routes */}
+            {/* <Route path="orders" element={<OrderManagement />} />
+            <Route path="orders/:id" element={<OrderDetail />} /> */}
           </Route>
 
           {/* Role-Based Redirection Route */}
