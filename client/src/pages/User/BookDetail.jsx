@@ -135,7 +135,6 @@ const BookDetailPage = () => {
         const result = await addToWhitelist(book.id);
         console.log("Whitelist result:", result);
 
-        toast.success("Book added to whitelist");
         setIsInWhitelist(true);
       }
     } catch (err) {

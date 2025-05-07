@@ -24,11 +24,6 @@ const Login = () => {
 
       if (result.success) {
         showToast.success("Successfully logged in!");
-
-        // Navigate after a short delay to let the user see the success message
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 1500);
       } else {
         showToast.error(result.message);
       }

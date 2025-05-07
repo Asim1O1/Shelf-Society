@@ -414,26 +414,45 @@ public class BookController : ControllerBase
   [Authorize(Roles = "Admin")]
   public async Task<ActionResult<ResponseHelper<object>>> DeleteBook(int id)
   {
-    var book = await _context.Books
-     .Include(b => b.AdditionalImages)
-     .FirstOrDefaultAsync(b => b.Id == id);
-    if (book == null)
+    // 1. Check for ACTIVE orders only (not all order items)
+    var hasActiveOrders = await _context.Orders
+        .AnyAsync(o => o.Items.Any(oi => oi.BookId == id &&
+                     o.Status != OrderStatus.Completed &&
+                     o.Status != OrderStatus.Cancelled));
+
+    if (hasActiveOrders)
     {
-      return NotFound(new ResponseHelper<object>
+      return BadRequest(new ResponseHelper<object>
       {
         Success = false,
-        Message = "Book not found",
+        Message = "Cannot delete: Book has active orders in progress.",
         Data = null
       });
     }
 
+    // 2. Find book with just what we need to clean up
+    var book = await _context.Books
+        .Include(b => b.AdditionalImages)
+        .Include(b => b.ActiveDiscount)
+        .FirstOrDefaultAsync(b => b.Id == id);
+
+    if (book == null) return NotFound();
+
+    // 3. Clean up related data
+    if (book.AdditionalImages.Any())
+      _context.BookImages.RemoveRange(book.AdditionalImages);
+
+    if (book.ActiveDiscount != null)
+      _context.Discounts.Remove(book.ActiveDiscount);
+
+    // 4. Delete the book
     _context.Books.Remove(book);
     await _context.SaveChangesAsync();
 
     return Ok(new ResponseHelper<object>
     {
       Success = true,
-      Message = "Book deleted successfully",
+      Message = "Book deleted successfully.",
       Data = null
     });
   }

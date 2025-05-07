@@ -19,9 +19,7 @@ public class ApplicationDbContext : DbContext
   public DbSet<CartItem> CartItems { get; set; } = null!;
   public DbSet<Order> Orders { get; set; } = null!;
   public DbSet<OrderItem> OrderItems { get; set; } = null!;
-
   public DbSet<Discount> Discounts { get; set; } = null!;
-  // Add to ApplicationDbContext.cs
   public DbSet<Announcement> Announcements { get; set; } = null!;
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,7 +53,6 @@ public class ApplicationDbContext : DbContext
         .HasForeignKey(ci => ci.BookId)
         .OnDelete(DeleteBehavior.Restrict);
 
-
     // Configure Order relationships
     modelBuilder.Entity<Order>()
         .HasOne(o => o.User)
@@ -70,17 +67,14 @@ public class ApplicationDbContext : DbContext
         .HasForeignKey(oi => oi.OrderId)
         .OnDelete(DeleteBehavior.Cascade);
 
-    modelBuilder.Entity<OrderItem>()
-        .HasOne(oi => oi.Book)
-        .WithMany()
-        .HasForeignKey(oi => oi.BookId)
-        .OnDelete(DeleteBehavior.Restrict);
+
 
     modelBuilder.Entity<Discount>()
-.HasOne(d => d.Book)
-.WithOne(b => b.ActiveDiscount)
-.HasForeignKey<Discount>(d => d.BookId)
-.OnDelete(DeleteBehavior.Cascade);
+        .HasOne(d => d.Book)
+        .WithOne(b => b.ActiveDiscount)
+        .HasForeignKey<Discount>(d => d.BookId)
+        .OnDelete(DeleteBehavior.Cascade);
+
 
     // Add DateTime converter for all DateTime properties to ensure UTC
     foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -90,9 +84,7 @@ public class ApplicationDbContext : DbContext
         if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
         {
           property.SetValueConverter(new ValueConverter<DateTime, DateTime>(
-              // When writing to database:
               v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
-              // When reading from database:
               v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
           ));
         }

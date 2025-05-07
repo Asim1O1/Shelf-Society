@@ -43,7 +43,7 @@ const useCartStore = create((set, get) => ({
 
       if (response.data.success) {
         set({ cart: response.data.data, isLoading: false });
-        toast.success("Item added to cart");
+
         return true;
       }
       return false;

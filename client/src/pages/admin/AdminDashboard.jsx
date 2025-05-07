@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import AdminSidebar from "../../components/admin/AdminSidebar";
+import DeleteConfirmModal from "../../components/admin/DeleteConfirmModal";
 import StatCard from "../../components/admin/StatCard";
 import useAuthStore from "../../stores/useAuthStore";
 import useBookStore from "../../stores/useBookStore";
+import showToast from "../../utils/ToastUtility";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -70,11 +72,14 @@ const AdminDashboard = () => {
       setRecentBooks(sortedBooks.slice(0, 5));
     }
   }, [books]);
-
   const handleDeleteBook = async (id) => {
     const result = await deleteBook(id);
+    console.log(result); // Log the result for debugging
     if (result.success) {
       setConfirmDelete(null);
+      showToast.success(result?.message || "Book deleted successfully");
+    } else {
+      showToast.error(result.message || "Failed to delete the book");
     }
   };
 
@@ -229,100 +234,6 @@ const AdminDashboard = () => {
           />
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Quick Actions
-            </h2>
-          </div>
-          <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Link
-              to="/books/create"
-              className="bg-blue-600 text-white text-center py-3 px-4 rounded hover:bg-blue-700 transition flex items-center justify-center"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 4v16m8-8H4"
-                ></path>
-              </svg>
-              Add New Book
-            </Link>
-
-            <Link
-              to="/books"
-              className="bg-gray-600 text-white text-center py-3 px-4 rounded hover:bg-gray-700 transition flex items-center justify-center"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                ></path>
-              </svg>
-              Manage Books
-            </Link>
-
-            <button className="bg-green-600 text-white text-center py-3 px-4 rounded hover:bg-green-700 transition flex items-center justify-center">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                ></path>
-              </svg>
-              Generate Report
-            </button>
-
-            <button className="bg-purple-600 text-white text-center py-3 px-4 rounded hover:bg-purple-700 transition flex items-center justify-center">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                ></path>
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                ></path>
-              </svg>
-              Settings
-            </button>
-          </div>
-        </div>
-
         {/* Recent Books */}
         <div className="bg-white rounded-lg shadow mb-8">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -409,12 +320,6 @@ const AdminDashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <Link
-                          to={`/books/${book.id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          View
-                        </Link>
                         <Link
                           to={`/books/edit/${book.id}`}
                           className="text-indigo-600 hover:text-indigo-900"
