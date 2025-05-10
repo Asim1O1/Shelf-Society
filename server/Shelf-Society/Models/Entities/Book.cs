@@ -24,6 +24,9 @@ public class Book
 
   public virtual Discount ActiveDiscount { get; set; }
   public ICollection<BookImage> AdditionalImages { get; set; } = new List<BookImage>();
+  public ICollection<Review> Reviews { get; set; }
+  public double? AverageRating { get; set; }
+  public int ReviewCount { get; set; }
 
 }
 

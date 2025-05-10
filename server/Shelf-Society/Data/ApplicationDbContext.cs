@@ -22,6 +22,8 @@ public class ApplicationDbContext : DbContext
   public DbSet<Discount> Discounts { get; set; } = null!;
   public DbSet<Announcement> Announcements { get; set; } = null!;
 
+  public DbSet<Review> Reviews { get; set; } = null!;
+
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
@@ -74,6 +76,29 @@ public class ApplicationDbContext : DbContext
         .WithOne(b => b.ActiveDiscount)
         .HasForeignKey<Discount>(d => d.BookId)
         .OnDelete(DeleteBehavior.Cascade);
+
+    // Configure Review entity
+    modelBuilder.Entity<Review>(entity =>
+    {
+      // Set primary key
+      entity.HasKey(r => r.Id);
+
+      // Configure relationship with User (one-to-many)
+      entity.HasOne(r => r.User)
+          .WithMany(u => u.Reviews)
+          .HasForeignKey(r => r.UserId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+      // Configure relationship with Book (one-to-many)
+      entity.HasOne(r => r.Book)
+          .WithMany(b => b.Reviews)
+          .HasForeignKey(r => r.BookId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+      // Create a unique constraint to prevent multiple reviews by the same user for the same book
+      entity.HasIndex(r => new { r.UserId, r.BookId })
+          .IsUnique();
+    });
 
 
     // Add DateTime converter for all DateTime properties to ensure UTC
