@@ -1,16 +1,24 @@
 // src/pages/OrderConfirmationPage.jsx
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AnnouncementBanner from "../../components/common/AnnouncementBanner";
 import Navbar from "../../components/common/NavBar";
 import useAuthStore from "../../stores/useAuthStore";
 import useOrderStore from "../../stores/useOrderStore";
 
+import { useState } from "react";
+import { toast } from "react-toastify";
+
 const OrderConfirmationPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const { getOrderById, currentOrder, isLoading, error } = useOrderStore();
+  const { getOrderById, currentOrder, isLoading, error, cancelOrder } =
+    useOrderStore();
+
+  // State for cancel confirmation modal
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -20,6 +28,27 @@ const OrderConfirmationPage = () => {
 
     getOrderById(id);
   }, [id, isAuthenticated, getOrderById, navigate]);
+
+  // Handle order cancellation
+  const handleCancelOrder = async () => {
+    if (!currentOrder) return;
+
+    setCancelLoading(true);
+    try {
+      const result = await cancelOrder(currentOrder.id);
+      if (result.success) {
+        toast.success("Your order has been successfully cancelled");
+        setShowCancelModal(false);
+      } else {
+        toast.error(result.message || "Failed to cancel order");
+      }
+    } catch (error) {
+      toast.error("An error occurred while cancelling your order");
+      console.error("Cancel order error:", error);
+    } finally {
+      setCancelLoading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -128,7 +157,15 @@ const OrderConfirmationPage = () => {
                   <div>
                     <p className="text-sm text-gray-600">Status</p>
                     <p className="font-medium">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          currentOrder.status === "Cancelled"
+                            ? "bg-red-100 text-red-800"
+                            : currentOrder.status === "Completed"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
                         {currentOrder.status}
                       </span>
                     </p>
@@ -224,16 +261,8 @@ const OrderConfirmationPage = () => {
                   <div>
                     {currentOrder.status === "Pending" && (
                       <button
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Are you sure you want to cancel this order?"
-                            )
-                          ) {
-                            // Handle cancel order
-                          }
-                        }}
-                        className="text-red-600 hover:text-red-800"
+                        onClick={() => setShowCancelModal(true)}
+                        className="px-4 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50"
                       >
                         Cancel Order
                       </button>
@@ -260,6 +289,61 @@ const OrderConfirmationPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Cancel Order Confirmation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Cancel Order</h3>
+            <p className="mb-6">
+              Are you sure you want to cancel this order? This action cannot be
+              undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                disabled={cancelLoading}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                No, Keep Order
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                disabled={cancelLoading}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-400 flex items-center"
+              >
+                {cancelLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Cancelling...
+                  </>
+                ) : (
+                  "Yes, Cancel Order"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -8,6 +8,7 @@ using Shelf_Society.Models.DTOs.Order;
 using Shelf_Society.Models.Entities;
 using Shelf_Society.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -27,6 +28,121 @@ namespace Shelf_Society.Controllers
       _emailService = emailService;
     }
 
+    [Authorize(Roles = "Admin,Staff")]
+    [HttpGet("list/all")] // Changed from "/order-list" to "list/all" to fit within the controller's route pattern
+    public async Task<ActionResult<ResponseHelper<PaginationHelper<OrderListItemDTO>>>> GetAllOrders(
+       [FromQuery] string status = null,
+       [FromQuery] string search = null,
+       [FromQuery] DateTime? startDate = null,
+       [FromQuery] DateTime? endDate = null,
+       [FromQuery] int pageNumber = 1,
+       [FromQuery] int pageSize = 10)
+    {
+      // Start with all orders
+      var query = _context.Orders
+          .Include(o => o.User)
+          .AsQueryable();
+
+      // Apply status filter if provided
+      if (!string.IsNullOrEmpty(status) && status != "All")
+      {
+        if (Enum.TryParse<OrderStatus>(status, out var orderStatus))
+        {
+          query = query.Where(o => o.Status == orderStatus);
+        }
+      }
+
+      // Apply date range filters if provided
+      if (startDate.HasValue)
+      {
+        query = query.Where(o => o.OrderDate >= startDate.Value);
+      }
+
+      if (endDate.HasValue)
+      {
+        // Add one day to include the entire end date
+        var nextDay = endDate.Value.AddDays(1);
+        query = query.Where(o => o.OrderDate < nextDay);
+      }
+
+      // Apply search if provided
+      if (!string.IsNullOrEmpty(search))
+      {
+        search = search.ToLower();
+
+        // Try to parse as integer for order ID search
+        if (int.TryParse(search, out var orderId))
+        {
+          query = query.Where(o => o.Id == orderId);
+        }
+        else
+        {
+          // Search in claim code, customer name and email
+          query = query.Where(o =>
+              o.ClaimCode.ToLower().Contains(search) ||
+              o.User.FirstName.ToLower().Contains(search) ||
+              o.User.LastName.ToLower().Contains(search) ||
+              o.User.Email.ToLower().Contains(search)
+          );
+        }
+      }
+
+      // Default to newest first
+      query = query.OrderByDescending(o => o.OrderDate);
+
+      // Apply pagination
+      var pagedOrders = await PaginationHelper<Order>.CreateAsync(query, pageNumber, pageSize);
+
+      // Map to DTOs
+      var orderDtos = new List<OrderListItemDTO>();
+
+      foreach (var order in pagedOrders.Items)
+      {
+        // Get top item names for this order (limit to 3 for display)
+        var itemNames = await _context.OrderItems
+            .Where(oi => oi.OrderId == order.Id)
+            .Include(oi => oi.Book)
+            .Select(oi => new
+            {
+              Title = oi.Book.Title,
+              Quantity = oi.Quantity
+            })
+            .Take(3)  // Limit to top 3 items
+            .ToListAsync();
+
+        var dto = new OrderListItemDTO
+        {
+          Id = order.Id,
+          ClaimCode = order.ClaimCode,
+          Status = order.Status.ToString(),
+          TotalItems = await _context.OrderItems.Where(oi => oi.OrderId == order.Id).SumAsync(oi => oi.Quantity),
+          FinalAmount = order.FinalAmount,
+          OrderDate = order.OrderDate,
+          CanCancel = order.Status == OrderStatus.Pending || order.Status == OrderStatus.Confirmed,
+          ItemNames = itemNames.Select(item => $"{item.Quantity}× {item.Title}").ToList(),
+          // Include customer information for staff view
+          CustomerName = $"{order.User.FirstName} {order.User.LastName}",
+          CustomerEmail = order.User.Email
+        };
+
+        orderDtos.Add(dto);
+      }
+
+      // Create final response with pagination
+      var pagedResponse = new PaginationHelper<OrderListItemDTO>(
+          orderDtos,
+          pagedOrders.TotalCount,
+          pagedOrders.PageNumber,
+          pagedOrders.PageSize);
+
+      return Ok(new ResponseHelper<PaginationHelper<OrderListItemDTO>>
+      {
+        Success = true,
+        Message = "Orders retrieved successfully",
+        Data = pagedResponse
+      });
+    }
+
     // Get list of user's orders
     [HttpGet]
     public async Task<ActionResult<ResponseHelper<PaginationHelper<OrderListItemDTO>>>> GetOrders(
@@ -44,16 +160,36 @@ namespace Shelf_Society.Controllers
       var pagedOrders = await PaginationHelper<Order>.CreateAsync(query, pageNumber, pageSize);
 
       // Map to DTOs
-      var orderDtos = pagedOrders.Items.Select(o => new OrderListItemDTO
+      var orderDtos = new List<OrderListItemDTO>();
+
+      foreach (var order in pagedOrders.Items)
       {
-        Id = o.Id,
-        ClaimCode = o.ClaimCode,
-        Status = o.Status.ToString(),
-        TotalItems = _context.OrderItems.Where(oi => oi.OrderId == o.Id).Sum(oi => oi.Quantity),
-        FinalAmount = o.FinalAmount,
-        OrderDate = o.OrderDate,
-        CanCancel = o.Status == OrderStatus.Pending || o.Status == OrderStatus.Confirmed
-      }).ToList();
+        // Get top item names for this order (limit to 3 for display)
+        var itemNames = await _context.OrderItems
+            .Where(oi => oi.OrderId == order.Id)
+            .Include(oi => oi.Book)
+            .Select(oi => new
+            {
+              Title = oi.Book.Title,
+              Quantity = oi.Quantity
+            })
+            .Take(3)  // Limit to top 3 items
+            .ToListAsync();
+
+        var dto = new OrderListItemDTO
+        {
+          Id = order.Id,
+          ClaimCode = order.ClaimCode,
+          Status = order.Status.ToString(),
+          TotalItems = await _context.OrderItems.Where(oi => oi.OrderId == order.Id).SumAsync(oi => oi.Quantity), // Fixed to use async version
+          FinalAmount = order.FinalAmount,
+          OrderDate = order.OrderDate,
+          CanCancel = order.Status == OrderStatus.Pending || order.Status == OrderStatus.Confirmed,
+          ItemNames = itemNames.Select(item => $"{item.Quantity}× {item.Title}").ToList()
+        };
+
+        orderDtos.Add(dto);
+      }
 
       // Create final response with pagination
       var pagedResponse = new PaginationHelper<OrderListItemDTO>(
@@ -69,6 +205,7 @@ namespace Shelf_Society.Controllers
         Data = pagedResponse
       });
     }
+
 
     // Get order details by id
     [HttpGet("{id}")]

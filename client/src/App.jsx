@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
   Navigate,
   Route,
@@ -12,19 +12,26 @@ import CreateDiscount from "./components/admin/CreateDiscount";
 import CreateStaff from "./components/admin/CreateStaff";
 import EditAnnouncement from "./components/admin/EditAnnouncementPage";
 import EditDiscount from "./components/admin/EditDiscount";
+import EditStaffForm from "./components/admin/EditStaffForm";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
 import CartPage from "./components/cart/CartPage";
 import ToastNotification from "./components/common/ToastNotification";
+import StaffLayout from "./layouts/StaffLayout";
 import AdminBookManagePage from "./pages/admin/AdminBookManagePage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminOrderManagement from "./pages/admin/AdminOrderManagement";
 import AnnouncementManagement from "./pages/admin/AnnounceManagement";
 import DiscountManagement from "./pages/admin/DiscountManagement";
 import StaffManagement from "./pages/admin/StaffManagement";
 import BooksPage from "./pages/public/BooksPage";
 import HomePage from "./pages/public/HomePage";
+import StaffDashboard from "./pages/staff/StaffDashboard";
+import StaffOrderDetails from "./pages/staff/StaffOrderDetails";
+import StaffOrdersList from "./pages/staff/StaffOrderList";
 import BookDetailPage from "./pages/User/BookDetail";
 import CheckoutPage from "./pages/User/CheckOutPage";
+import MyOrdersPage from "./pages/User/MyOrdersPage";
 import OrderConfirmationPage from "./pages/User/OrderConfirmationPage";
 import WhitelistPage from "./pages/User/Whitelists";
 import useAuthStore from "./stores/useAuthStore";
@@ -34,8 +41,10 @@ import ProtectedRoute, { AdminRoute } from "./utils/ProtectRoute";
 const AdminStaffPublicRoute = ({ children }) => {
   const { user } = useAuthStore();
 
-  if (user && (user.role === "Admin" || user.role === "Staff")) {
+  if (user && user.role === "Admin") {
     return <Navigate to="/admin" replace />;
+  } else if (user && user.role === "Staff") {
+    return <Navigate to="/staff" replace />;
   }
 
   return children;
@@ -47,14 +56,14 @@ const RoleRedirect = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      if (user?.role === "Admin" || user?.role === "Staff") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
-    } else {
+    if (!isAuthenticated) {
       navigate("/login", { replace: true });
+    } else if (user?.role === "Admin") {
+      navigate("/admin", { replace: true });
+    } else if (user?.role === "Staff") {
+      navigate("/staff", { replace: true }); // ✅ Redirect Staff to /staff
+    } else {
+      navigate("/", { replace: true }); // Default for general users
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -136,7 +145,7 @@ function App() {
               path="/my-orders"
               element={
                 <AdminStaffPublicRoute>
-                  <div>My Orders Page</div>
+                  <MyOrdersPage />
                 </AdminStaffPublicRoute>
               }
             />
@@ -172,8 +181,14 @@ function App() {
             <Route path="books" element={<AdminBookManagePage />} />
             <Route path="books/create" element={<BookForm />} />
             <Route path="books/edit/:id" element={<BookForm />} />
+
+            {/* Updated Staff Routes */}
             <Route path="staff" element={<StaffManagement />} />
             <Route path="staff/create" element={<CreateStaff />} />
+            <Route path="staff/edit/:id" element={<EditStaffForm />} />
+
+            <Route path="/admin/orders" element={<AdminOrderManagement />} />
+
             <Route path="discounts" element={<DiscountManagement />} />
             <Route path="discounts/create" element={<CreateDiscount />} />
             <Route path="discounts/edit/:id" element={<EditDiscount />} />
@@ -186,6 +201,15 @@ function App() {
               path="announcements/edit/:id"
               element={<EditAnnouncement />}
             />
+          </Route>
+          <Route path="/staff" element={<StaffLayout />}>
+            <Route index element={<StaffDashboard />} />
+            <Route path="orders" element={<StaffOrdersList />} />{" "}
+            {/* Added Orders List page */}
+            <Route path="orders/:id" element={<StaffOrderDetails />} />{" "}
+            {/* Updated to use path parameter */}
+            {/* <Route path="search" element={<StaffClaimCodeSearch />} /> Optional dedicated search page */}
+            {/* <Route path="stats" element={<StaffStatistics />} />  */}
           </Route>
 
           {/* Role-Based Redirection Route */}

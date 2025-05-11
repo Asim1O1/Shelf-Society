@@ -1,21 +1,63 @@
-// src/pages/admin/CreateStaff.jsx
+// src/pages/admin/CreateStaffForm.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
-import axiosInstance from "../../utils/axiosInstance";
+import useStaffManagementStore from "../../stores/useStaffManagementStore";
 
 const CreateStaff = () => {
   const navigate = useNavigate();
+  const { createStaffMember, isLoading, error, clearError } =
+    useStaffManagementStore();
+
   const [formData, setFormData] = useState({
-    email: "",
     firstName: "",
     lastName: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [formErrors, setFormErrors] = useState({});
+
+  // Reset any previous errors when component mounts
+  React.useEffect(() => {
+    clearError();
+  }, []);
+
+  // Show error messages from the store
+  React.useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
+  const validateForm = () => {
+    const errors = {};
+
+    if (!formData.firstName.trim()) errors.firstName = "First name is required";
+    if (!formData.lastName.trim()) errors.lastName = "Last name is required";
+
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = "Email is invalid";
+    }
+
+    if (!formData.password) {
+      errors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
+
+    if (!formData.confirmPassword) {
+      errors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,72 +65,38 @@ const CreateStaff = () => {
       ...formData,
       [name]: value,
     });
-    // Clear error when field is edited
-    if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: "",
-      });
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
-      newErrors.email = "Email is invalid";
-
-    if (!formData.firstName) newErrors.firstName = "First name is required";
-    if (!formData.lastName) newErrors.lastName = "Last name is required";
-
-    if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters";
-
-    if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validateForm()) return;
 
-    setIsLoading(true);
-    try {
-      const response = await axiosInstance.post("/staff-management", formData);
-
-      if (response.data.success) {
-        toast.success("Staff member created successfully");
-        navigate("/admin/staff");
-      }
-    } catch (error) {
-      console.error("Error creating staff:", error);
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error("Failed to create staff member");
-      }
-    } finally {
-      setIsLoading(false);
+    const result = await createStaffMember(formData);
+    if (result.success) {
+      toast.success("Staff member created successfully");
+      navigate("/admin/staff");
     }
   };
 
   return (
     <div className="p-6">
-      <div className="mb-6">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Add Staff Member</h1>
-        <p className="text-gray-600">Create a new staff account</p>
+        <Link to="/admin/staff" className="text-blue-600 hover:text-blue-800">
+          Back to Staff List
+        </Link>
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <label className="block text-gray-700 mb-2" htmlFor="firstName">
-                First Name
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                First Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -96,18 +104,23 @@ const CreateStaff = () => {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
-                className={`w-full p-2 border rounded ${
-                  errors.firstName ? "border-red-500" : "border-gray-300"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  formErrors.firstName ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.firstName && (
-                <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+              {formErrors.firstName && (
+                <p className="mt-1 text-sm text-red-500">
+                  {formErrors.firstName}
+                </p>
               )}
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2" htmlFor="lastName">
-                Last Name
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Last Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -115,37 +128,47 @@ const CreateStaff = () => {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
-                className={`w-full p-2 border rounded ${
-                  errors.lastName ? "border-red-500" : "border-gray-300"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  formErrors.lastName ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.lastName && (
-                <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+              {formErrors.lastName && (
+                <p className="mt-1 text-sm text-red-500">
+                  {formErrors.lastName}
+                </p>
               )}
             </div>
+          </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-gray-700 mb-2" htmlFor="email">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`w-full p-2 border rounded ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-              )}
-            </div>
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-md ${
+                formErrors.email ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {formErrors.email && (
+              <p className="mt-1 text-sm text-red-500">{formErrors.email}</p>
+            )}
+          </div>
 
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <label className="block text-gray-700 mb-2" htmlFor="password">
-                Password
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Password <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
@@ -153,21 +176,23 @@ const CreateStaff = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full p-2 border rounded ${
-                  errors.password ? "border-red-500" : "border-gray-300"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  formErrors.password ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+              {formErrors.password && (
+                <p className="mt-1 text-sm text-red-500">
+                  {formErrors.password}
+                </p>
               )}
             </div>
 
             <div>
               <label
-                className="block text-gray-700 mb-2"
                 htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Confirm Password
+                Confirm Password <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
@@ -175,34 +200,41 @@ const CreateStaff = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`w-full p-2 border rounded ${
-                  errors.confirmPassword ? "border-red-500" : "border-gray-300"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  formErrors.confirmPassword
+                    ? "border-red-500"
+                    : "border-gray-300"
                 }`}
               />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.confirmPassword}
+              {formErrors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-500">
+                  {formErrors.confirmPassword}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end">
+          <div className="flex justify-end">
             <button
               type="button"
               onClick={() => navigate("/admin/staff")}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded mr-2 hover:bg-gray-300"
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 mr-2 hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${
-                isLoading ? "opacity-70 cursor-not-allowed" : ""
-              }`}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"
             >
-              {isLoading ? "Creating..." : "Create Staff Member"}
+              {isLoading ? (
+                <>
+                  <span className="inline-block animate-spin mr-2">⟳</span>
+                  Creating...
+                </>
+              ) : (
+                "Create Staff Member"
+              )}
             </button>
           </div>
         </form>

@@ -1,4 +1,3 @@
-import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
 
@@ -11,6 +10,21 @@ export const AdminRoute = () => {
   }
 
   if (user?.role !== "Admin") {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
+};
+
+// Staff-only protected route
+export const StaffRoute = () => {
+  const { isAuthenticated, user } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role !== "Staff") {
     return <Navigate to="/" replace />;
   }
 

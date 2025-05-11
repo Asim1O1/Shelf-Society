@@ -1,63 +1,53 @@
 // src/pages/admin/StaffManagement.jsx
-import React, { useEffect, useState } from "react";
-
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import useAuthStore from "../../stores/useAuthStore";
-import axiosInstance from "../../utils/axiosInstance";
+import useStaffManagementStore from "../../stores/useStaffManagementStore";
 
 const StaffManagement = () => {
-  const [staff, setStaff] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [pagination, setPagination] = useState({
-    pageNumber: 1,
-    pageSize: 10,
-    totalCount: 0,
-  });
-  const { token } = useAuthStore();
+  const {
+    staffMembers,
+    pagination,
+    isLoading,
+    error,
+    getStaffMembers,
+    deleteStaffMember,
+    setPagination,
+  } = useStaffManagementStore();
+
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
 
   useEffect(() => {
-    if (token) {
-      fetchStaff();
-    }
-  }, [token, pagination.pageNumber]);
+    // Load staff members when component mounts or pagination changes
+    getStaffMembers();
+  }, [pagination.pageNumber]);
 
-  const fetchStaff = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axiosInstance.get(
-        `/staff-management?pageNumber=${pagination.pageNumber}&pageSize=${pagination.pageSize}`
-      );
-
-      if (response.data.success) {
-        setStaff(response.data.data.items);
-        setPagination({
-          ...pagination,
-          totalCount: response.data.data.totalCount,
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching staff:", error);
-      toast.error("Failed to fetch staff members");
-    } finally {
-      setIsLoading(false);
+  // Show error messages from the store
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
     }
+  }, [error]);
+
+  const handleDeleteStaff = (staffMember) => {
+    setDeleteConfirmation(staffMember);
   };
 
-  const handleDeleteStaff = async (id) => {
-    if (window.confirm("Are you sure you want to delete this staff member?")) {
-      try {
-        const response = await axiosInstance.delete(`/staff-management/${id}`);
-        if (response.data.success) {
-          toast.success("Staff member deleted successfully");
-          fetchStaff();
-        }
-      } catch (error) {
-        console.error("Error deleting staff:", error);
-        toast.error("Failed to delete staff member");
-      }
+  const confirmDelete = async () => {
+    if (!deleteConfirmation) return;
+
+    const result = await deleteStaffMember(deleteConfirmation.id);
+    if (result.success) {
+      toast.success("Staff member deleted successfully");
     }
+    setDeleteConfirmation(null);
   };
+
+  const handlePageChange = (newPageNumber) => {
+    setPagination({ pageNumber: newPageNumber });
+  };
+
+  const totalPages = Math.ceil(pagination.totalCount / pagination.pageSize);
 
   return (
     <div className="p-6">
@@ -75,7 +65,7 @@ const StaffManagement = () => {
         <div className="flex justify-center py-10">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
         </div>
-      ) : staff.length === 0 ? (
+      ) : staffMembers.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-6 text-center">
           <p className="text-gray-500">No staff members found.</p>
         </div>
@@ -99,7 +89,7 @@ const StaffManagement = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {staff.map((staffMember) => (
+              {staffMembers.map((staffMember) => (
                 <tr key={staffMember.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -135,7 +125,7 @@ const StaffManagement = () => {
                       Edit
                     </Link>
                     <button
-                      onClick={() => handleDeleteStaff(staffMember.id)}
+                      onClick={() => handleDeleteStaff(staffMember)}
                       className="text-red-600 hover:text-red-900"
                     >
                       Delete
@@ -151,10 +141,7 @@ const StaffManagement = () => {
             <div className="flex justify-between items-center px-6 py-3 bg-gray-50">
               <button
                 onClick={() =>
-                  setPagination({
-                    ...pagination,
-                    pageNumber: Math.max(1, pagination.pageNumber - 1),
-                  })
+                  handlePageChange(Math.max(1, pagination.pageNumber - 1))
                 }
                 disabled={pagination.pageNumber === 1}
                 className={`px-4 py-2 rounded ${
@@ -166,23 +153,13 @@ const StaffManagement = () => {
                 Previous
               </button>
               <span className="text-sm text-gray-700">
-                Page {pagination.pageNumber} of{" "}
-                {Math.ceil(pagination.totalCount / pagination.pageSize)}
+                Page {pagination.pageNumber} of {totalPages}
               </span>
               <button
-                onClick={() =>
-                  setPagination({
-                    ...pagination,
-                    pageNumber: pagination.pageNumber + 1,
-                  })
-                }
-                disabled={
-                  pagination.pageNumber >=
-                  Math.ceil(pagination.totalCount / pagination.pageSize)
-                }
+                onClick={() => handlePageChange(pagination.pageNumber + 1)}
+                disabled={pagination.pageNumber >= totalPages}
                 className={`px-4 py-2 rounded ${
-                  pagination.pageNumber >=
-                  Math.ceil(pagination.totalCount / pagination.pageSize)
+                  pagination.pageNumber >= totalPages
                     ? "bg-gray-200 cursor-not-allowed"
                     : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
@@ -191,6 +168,36 @@ const StaffManagement = () => {
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+            <p className="mb-6">
+              Are you sure you want to delete staff member{" "}
+              <span className="font-medium">
+                {`${deleteConfirmation.firstName} ${deleteConfirmation.lastName}`}
+              </span>
+              ? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteConfirmation(null)}
+                className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

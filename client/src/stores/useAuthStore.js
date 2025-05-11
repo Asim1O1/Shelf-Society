@@ -149,6 +149,11 @@ const useAuthStore = create(
 
       // Clear any error
       clearError: () => set({ error: null }),
+
+      // Get token function (moved inside the state object)
+      getToken: () => {
+        return get().token; // Returns the access token from the store
+      },
     }),
     {
       name: "auth-storage", // unique name for localStorage

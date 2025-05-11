@@ -18,4 +18,7 @@ public class OrderResponseDTO
   public DateTime? CompletedDate { get; set; }
   public bool CanCancel { get; set; }
 
+  public string CustomerName { get; set; }
+  public string CustomerEmail { get; set; }
+
 }

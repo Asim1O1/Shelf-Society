@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
 import useAuthStore from "../../stores/useAuthStore";
 import useCartStore from "../../stores/useCartStore";
+import NotificationsPanel from "./NotificationPanel";
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
   const { cart } = useCartStore();
@@ -61,6 +64,17 @@ const Navbar = () => {
                 Admin
               </Link>
             )}
+
+            {/* Staff link - only show if user is staff */}
+            {isAuthenticated &&
+              (user?.role === "Staff" || user?.role === "Admin") && (
+                <Link
+                  to="/staff"
+                  className="font-medium uppercase text-sm text-gray-900 hover:text-gray-600"
+                >
+                  Staff
+                </Link>
+              )}
 
             {/* Show login/register only if not authenticated */}
             {!isAuthenticated && (
@@ -125,6 +139,14 @@ const Navbar = () => {
               ></path>
             </svg>
           </button>
+
+          {/* Notifications Panel - Only show for authenticated users */}
+          {isAuthenticated && (
+            <div className="relative">
+              <NotificationsPanel />
+            </div>
+          )}
+
           <Link to="/cart" className="relative">
             <svg
               className="w-6 h-6"
@@ -207,6 +229,15 @@ const Navbar = () => {
                     Admin Dashboard
                   </Link>
                 )}
+                {(user?.role === "Staff" || user?.role === "Admin") && (
+                  <Link
+                    to="/staff"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsProfileOpen(false)}
+                  >
+                    Staff Dashboard
+                  </Link>
+                )}
                 <Link
                   to="/my-orders"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -244,6 +275,13 @@ const Navbar = () => {
             >
               Books
             </Link>
+            <Link
+              to="/whitelist"
+              className="font-medium uppercase text-sm text-gray-900 hover:text-gray-600 py-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              WhiteList
+            </Link>
 
             {/* Admin link - only show if user is admin */}
             {isAuthenticated && user?.role === "Admin" && (
@@ -255,6 +293,18 @@ const Navbar = () => {
                 Admin
               </Link>
             )}
+
+            {/* Staff link - only show if user is staff */}
+            {isAuthenticated &&
+              (user?.role === "Staff" || user?.role === "Admin") && (
+                <Link
+                  to="/staff"
+                  className="font-medium uppercase text-sm text-gray-900 hover:text-gray-600 py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Staff
+                </Link>
+              )}
 
             {/* Show login/register only if not authenticated */}
             {!isAuthenticated ? (

@@ -54,6 +54,71 @@ const useOrderStore = create((set, get) => ({
       return { success: false, message: err.response?.data?.message };
     }
   },
+  // Get all orders (for admin/staff)
+  getAllOrders: async (filters = {}) => {
+    const { isAuthenticated, user } = useAuthStore.getState();
+    // Check if user is authenticated and is staff or admin
+    if (
+      !isAuthenticated ||
+      (user?.role !== "Staff" && user?.role !== "Admin")
+    ) {
+      toast.error("Unauthorized access");
+      return { success: false, message: "Unauthorized access" };
+    }
+
+    const { pagination } = get();
+    set({ isLoading: true, error: null });
+
+    try {
+      const params = new URLSearchParams();
+      params.append("pageNumber", pagination.pageNumber);
+      params.append("pageSize", pagination.pageSize);
+
+      // Add filters if provided
+      if (filters.status && filters.status !== "All") {
+        params.append("status", filters.status);
+      }
+
+      if (filters.search) {
+        params.append("search", filters.search);
+      }
+
+      if (filters.startDate) {
+        params.append("startDate", filters.startDate.toISOString());
+      }
+
+      if (filters.endDate) {
+        params.append("endDate", filters.endDate.toISOString());
+      }
+
+      const response = await axiosInstance.get(
+        `/orders/list/all?${params.toString()}`
+      );
+
+      if (response.data.success) {
+        const { items, totalCount, pageNumber, pageSize } = response.data.data;
+        set({
+          orders: items,
+          pagination: { pageNumber, pageSize, totalCount },
+          isLoading: false,
+        });
+        return { success: true, data: response.data.data };
+      } else {
+        set({
+          error: response.data.message || "Failed to fetch orders",
+          isLoading: false,
+        });
+        return { success: false, message: response.data.message };
+      }
+    } catch (err) {
+      console.error("Error fetching all orders:", err);
+      set({
+        error: err.response?.data?.message || "Failed to fetch orders",
+        isLoading: false,
+      });
+      return { success: false, message: err.response?.data?.message };
+    }
+  },
 
   // Get order by ID
   getOrderById: async (id) => {

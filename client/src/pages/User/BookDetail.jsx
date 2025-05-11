@@ -1,19 +1,25 @@
 // src/pages/BookDetailPage.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import AnnouncementBanner from "../../components/common/AnnouncementBanner";
 import Navbar from "../../components/common/NavBar";
+import StarRating from "../../components/reviews/StarRating"; // Import the StarRating component
+// Import the ConfirmDeleteModal component
 import useAuthStore from "../../stores/useAuthStore";
 import useCartStore from "../../stores/useCartStore";
+import useReviewStore from "../../stores/useReviewStore"; // Import the ReviewStore
 import useWhitelist from "../../stores/useWhitelist";
 import axiosInstance from "../../utils/axiosInstance";
+
+import ConfirmDeleteModal from "../../components/Reviews/ConfirmDeleteModal";
+import ReviewForm from "../../components/Reviews/ReviewForm";
 
 const BookDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [book, setBook] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,6 +30,23 @@ const BookDetailPage = () => {
     useWhitelist();
   const [isInWhitelist, setIsInWhitelist] = useState(false);
   const { addToCart } = useCartStore();
+
+  // Review state and hooks
+  const {
+    bookReviews,
+    getBookReviews,
+    createReview,
+    updateReview,
+    deleteReview,
+    isLoading: reviewsLoading,
+  } = useReviewStore();
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [editingReview, setEditingReview] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    reviewId: null,
+  });
+  const [reviewsToShow, setReviewsToShow] = useState(2); // Initially show 2 reviews
 
   // Add this to your useEffect that fetches book details:
   useEffect(() => {
@@ -39,6 +62,9 @@ const BookDetailPage = () => {
 
   useEffect(() => {
     fetchBookDetails();
+
+    // Fetch book reviews when component mounts
+    getBookReviews(id);
   }, [id]);
 
   const fetchBookDetails = async () => {
@@ -200,6 +226,62 @@ const BookDetailPage = () => {
     : book
     ? (book.price * quantity).toFixed(2)
     : 0;
+
+  // Review handling functions
+  const handleWriteReviewClick = () => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: `/books/${id}` } });
+      return;
+    }
+    setShowReviewForm(true);
+    setEditingReview(null);
+  };
+
+  const handleSubmitReview = async (reviewData) => {
+    let result;
+
+    if (editingReview) {
+      result = await updateReview(editingReview.id, reviewData);
+    } else {
+      result = await createReview(reviewData);
+    }
+
+    if (result.success) {
+      setShowReviewForm(false);
+      setEditingReview(null);
+      toast.success(
+        editingReview
+          ? "Review updated successfully"
+          : "Review submitted successfully"
+      );
+    }
+  };
+
+  const handleEditReview = (review) => {
+    setEditingReview(review);
+    setShowReviewForm(true);
+  };
+
+  const handleDeleteClick = (reviewId) => {
+    setDeleteModal({ isOpen: true, reviewId });
+  };
+
+  const confirmDeleteReview = async () => {
+    const result = await deleteReview(deleteModal.reviewId);
+    if (result.success) {
+      toast.success("Review deleted successfully");
+    }
+    setDeleteModal({ isOpen: false, reviewId: null });
+  };
+
+  // Check if the current user has already reviewed the book
+  const hasUserReviewed = bookReviews?.reviews?.some(
+    (review) => isAuthenticated && user?.id === review.userId
+  );
+
+  // Determine if user can review (authenticated, hasn't reviewed yet, and has purchased)
+  const canReview = isAuthenticated && !hasUserReviewed;
+  // In a real app, you'd check if user has purchased the book
 
   if (isLoading) {
     return (
@@ -413,28 +495,17 @@ const BookDetailPage = () => {
                 </h1>
                 <p className="text-xl text-gray-700 mb-4">by {book.author}</p>
 
-                {/* Rating */}
+                {/* Rating - Updated with StarRating component */}
                 <div className="flex items-center mb-4">
-                  <div className="flex text-yellow-400">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`w-5 h-5 ${
-                          i < Math.round(book.rating)
-                            ? "text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                      </svg>
-                    ))}
-                  </div>
+                  <StarRating rating={book.averageRating || 0} size="medium" />
                   <span className="ml-2 text-gray-600">
-                    {book.rating.toFixed(1)} (
-                    {book.rating ? "Based on reviews" : "No reviews yet"})
+                    {bookReviews?.averageRating
+                      ? `${bookReviews.averageRating.toFixed(1)} (${
+                          bookReviews.reviewCount
+                        } ${
+                          bookReviews.reviewCount === 1 ? "review" : "reviews"
+                        })`
+                      : "No reviews yet"}
                   </span>
                 </div>
 
@@ -472,7 +543,6 @@ const BookDetailPage = () => {
                   )}
                 </div>
 
-                {/* Rest of your existing code remains the same */}
                 {/* Availability */}
                 <div className="mb-4">
                   <span
@@ -611,6 +681,233 @@ const BookDetailPage = () => {
                 <p className="text-gray-700">{book.description}</p>
               </div>
             </div>
+
+            {/* Reviews Section - New Addition */}
+            <div className="mt-12 border-t border-gray-200 pt-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900">
+                  Customer Reviews
+                </h2>
+                <div className="flex gap-2">
+                  {!showReviewForm && canReview && (
+                    <button
+                      onClick={handleWriteReviewClick}
+                      className="inline-flex items-center px-4 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50"
+                    >
+                      <svg
+                        className="w-5 h-5 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                      Write a Review
+                    </button>
+                  )}
+                  {bookReviews?.reviews?.length > 0 && (
+                    <Link
+                      to={`/books/${id}/reviews`}
+                      className="inline-flex items-center px-4 py-2 text-red-500 hover:text-red-700"
+                    >
+                      View All Reviews
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {/* Review Summary */}
+              {bookReviews && (
+                <div className="mb-8">
+                  <div className="flex items-center mb-4">
+                    <div className="flex items-center">
+                      <StarRating
+                        rating={bookReviews.averageRating || 0}
+                        size="large"
+                      />
+                      <span className="ml-2 text-lg text-gray-700">
+                        {bookReviews.averageRating
+                          ? `${bookReviews.averageRating.toFixed(1)} out of 5`
+                          : "No ratings yet"}
+                      </span>
+                    </div>
+                    <span className="ml-4 text-gray-500">
+                      {bookReviews.reviewCount}{" "}
+                      {bookReviews.reviewCount === 1 ? "review" : "reviews"}
+                    </span>
+                  </div>
+
+                  {/* Rating distribution */}
+                  {bookReviews.reviewCount > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-2">
+                        {[5, 4, 3, 2, 1].map((star) => {
+                          const reviewsWithThisRating =
+                            bookReviews.reviews.filter(
+                              (r) => Math.round(r.rating) === star
+                            ).length;
+                          const percentage =
+                            bookReviews.reviewCount > 0
+                              ? Math.round(
+                                  (reviewsWithThisRating /
+                                    bookReviews.reviewCount) *
+                                    100
+                                )
+                              : 0;
+
+                          return (
+                            <div
+                              key={star}
+                              className="flex items-center text-sm"
+                            >
+                              <div className="w-12">
+                                {star} star{star !== 1 ? "s" : ""}
+                              </div>
+                              <div className="w-full mx-2">
+                                <div className="bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className="bg-yellow-400 h-2 rounded-full"
+                                    style={{ width: `${percentage}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                              <div className="w-10 text-right">
+                                {percentage}%
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Review Form - if user clicks "Write a Review" */}
+              {showReviewForm && (
+                <div className="mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                  <ReviewForm
+                    bookId={book.id}
+                    bookTitle={book.title}
+                    initialData={editingReview}
+                    onSubmit={handleSubmitReview}
+                    onCancel={() => {
+                      setShowReviewForm(false);
+                      setEditingReview(null);
+                    }}
+                    isLoading={reviewsLoading}
+                  />
+                </div>
+              )}
+
+              {/* Review Listing */}
+              {bookReviews?.reviews?.length > 0 ? (
+                <div className="space-y-6">
+                  {bookReviews.reviews.slice(0, reviewsToShow).map((review) => (
+                    <div
+                      key={review.id}
+                      className="border-b border-gray-200 pb-6 last:border-b-0"
+                    >
+                      <div className="flex justify-between">
+                        <div>
+                          <div className="flex items-center">
+                            <p className="font-medium text-gray-800">
+                              {review.userName}
+                            </p>
+                            <span className="mx-2 text-gray-300">•</span>
+                            <p className="text-sm text-gray-500">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="mt-1">
+                            <StarRating rating={review.rating} size="small" />
+                          </div>
+                        </div>
+
+                        {isAuthenticated && user?.id === review.userId && (
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleEditReview(review)}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                ></path>
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(review.id)}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                ></path>
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-2">
+                        <p className="text-gray-700">{review.comment}</p>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Show more reviews button */}
+                  {bookReviews.reviews.length > reviewsToShow && (
+                    <div className="text-center">
+                      <button
+                        onClick={() => setReviewsToShow((prev) => prev + 5)}
+                        className="text-red-500 hover:text-red-700 font-medium"
+                      >
+                        Show More Reviews
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-10 bg-gray-50 rounded-lg">
+                  <p className="text-gray-500 mb-4">
+                    No reviews yet for this book
+                  </p>
+                  {canReview && !showReviewForm && (
+                    <button
+                      onClick={handleWriteReviewClick}
+                      className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                    >
+                      Be the First to Review
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -674,6 +971,14 @@ const BookDetailPage = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Review Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, reviewId: null })}
+        onConfirm={confirmDeleteReview}
+        isLoading={reviewsLoading}
+      />
     </div>
   );
 };

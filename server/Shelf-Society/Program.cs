@@ -95,6 +95,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<OrderHub>("/orderhub"); // Add this line to map your hub
+app.MapHub<OrderHub>("/orderhub");
 
 app.Run();
