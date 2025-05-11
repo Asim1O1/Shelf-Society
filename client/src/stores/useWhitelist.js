@@ -1,8 +1,8 @@
 // src/hooks/useWhitelist.js
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import useAuthStore from "../stores/useAuthStore";
 import axiosInstance from "../utils/axiosInstance";
+import useAuthStore from "./useAuthStore";
 
 const useWhitelist = () => {
   const [whitelist, setWhitelist] = useState([]);
