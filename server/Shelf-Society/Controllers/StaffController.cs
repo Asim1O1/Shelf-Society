@@ -1,9 +1,11 @@
 // Controllers/StaffController.cs
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Shelf_Society.Data;
 using Shelf_Society.Helpers;
+using Shelf_Society.Hubs;
 using Shelf_Society.Models.DTOs.Order;
 using Shelf_Society.Models.Entities;
 using System;
@@ -18,16 +20,19 @@ namespace Shelf_Society.Controllers
   public class StaffController : ControllerBase
   {
     private readonly ApplicationDbContext _context;
+    private readonly IHubContext<OrderHub> _orderHub; // Add this
 
-    public StaffController(ApplicationDbContext context)
+    public StaffController(ApplicationDbContext context, IHubContext<OrderHub> orderHub) // Update constructor
     {
       _context = context;
+      _orderHub = orderHub;
     }
 
     // Process a claim code
     [HttpGet("orders/claim/{claimCode}")]
     public async Task<ActionResult<ResponseHelper<OrderResponseDTO>>> GetOrderByClaimCode(string claimCode)
     {
+      // Existing code - no changes needed
       var order = await _context.Orders
           .Include(o => o.Items)
           .ThenInclude(oi => oi.Book)
@@ -88,6 +93,7 @@ namespace Shelf_Society.Controllers
       var order = await _context.Orders
           .Include(o => o.Items)
           .ThenInclude(oi => oi.Book)
+          .Include(o => o.User) // Add user info for notification
           .FirstOrDefaultAsync(o => o.Id == id);
 
       if (order == null)
@@ -111,15 +117,43 @@ namespace Shelf_Society.Controllers
         });
       }
 
+      // Save previous status to check if this is a newly completed order
+      var previousStatus = order.Status;
+
       // Update order status
       var newStatus = Enum.Parse<OrderStatus>(dto.Status);
       order.Status = newStatus;
       order.UpdatedAt = DateTime.UtcNow;
 
-      // Set completion date if order is now completed
+      // Handle order completion with real-time notification
       if (newStatus == OrderStatus.Completed)
       {
         order.CompletedDate = DateTime.UtcNow;
+
+        // Only broadcast if this is a newly completed order
+        if (previousStatus != OrderStatus.Completed)
+        {
+          // Create the broadcast data
+          var broadcastData = new
+          {
+            OrderId = order.Id,
+            CustomerName = $"{order.User.FirstName} {order.User.LastName}",
+            TotalItems = order.Items.Sum(oi => oi.Quantity),
+            FinalAmount = order.FinalAmount,
+            Books = order.Items.Select(oi => new
+            {
+              BookId = oi.BookId,
+              Title = oi.Book.Title,
+              Author = oi.Book.Author,
+              Quantity = oi.Quantity
+            }).ToList(),
+            Message = $"Order #{order.Id} with {order.Items.Sum(oi => oi.Quantity)} book(s) has been successfully completed!",
+            CompletedAt = order.CompletedDate.Value
+          };
+
+          // Broadcast to all connected clients
+          await _orderHub.Clients.All.SendAsync("OrderCompleted", broadcastData);
+        }
       }
 
       await _context.SaveChangesAsync();
