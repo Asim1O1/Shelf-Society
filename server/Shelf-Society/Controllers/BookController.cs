@@ -165,6 +165,49 @@ public class BookController : ControllerBase
     });
   }
 
+  [HttpGet("genres")]
+  public async Task<ActionResult<ResponseHelper<List<GenreDTO>>>> GetGenres()
+  {
+    var genres = await _context.Books
+        .GroupBy(b => b.Genre)
+        .Select(g => new GenreDTO
+        {
+          Name = g.Key,
+          Count = g.Count(),
+          AverageRating = g.Average(b => b.Rating)
+        })
+        .OrderByDescending(g => g.Count)
+        .ToListAsync();
+
+    return Ok(new ResponseHelper<List<GenreDTO>>
+    {
+      Success = true,
+      Message = "Genres retrieved successfully",
+      Data = genres
+    });
+  }
+
+  [HttpGet("languages")]
+  public async Task<ActionResult<ResponseHelper<List<LanguageDTO>>>> GetLanguages()
+  {
+    var languages = await _context.Books
+        .GroupBy(b => b.Language)
+        .Select(l => new LanguageDTO
+        {
+          Name = l.Key,
+          Count = l.Count()
+        })
+        .OrderByDescending(l => l.Count)
+        .ToListAsync();
+
+    return Ok(new ResponseHelper<List<LanguageDTO>>
+    {
+      Success = true,
+      Message = "Languages retrieved successfully",
+      Data = languages
+    });
+  }
+
   [HttpGet("{id}")]
   public async Task<ActionResult<ResponseHelper<BookResponseDTO>>> GetBookById(int id)
   {
