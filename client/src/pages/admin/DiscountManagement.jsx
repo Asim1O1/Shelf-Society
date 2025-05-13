@@ -80,7 +80,7 @@ const DiscountManagement = () => {
           </div>
           <Link
             to="/admin/discounts/create"
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-sm hover:shadow-md"
+            className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-6 py-3 rounded-lg font-medium hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-sm hover:shadow-md"
           >
             Add New Discount
           </Link>
@@ -92,7 +92,7 @@ const DiscountManagement = () => {
               type="checkbox"
               checked={activeOnly}
               onChange={() => setActiveOnly(!activeOnly)}
-              className="form-checkbox h-5 w-5 text-blue-600 rounded transition-colors"
+              className="form-checkbox h-5 w-5 text-gray-600 rounded transition-colors"
             />
             <span className="ml-3 text-gray-700 font-medium">
               Show active discounts only
@@ -102,7 +102,7 @@ const DiscountManagement = () => {
 
         {isLoading ? (
           <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-600"></div>
           </div>
         ) : discounts.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
@@ -215,7 +215,7 @@ const DiscountManagement = () => {
                           </span>
                         )}
                         {isFuture && (
-                          <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                          <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                             Upcoming
                           </span>
                         )}

@@ -141,7 +141,7 @@ const AdminBookManagePage = () => {
           </div>
           <Link
             to="/books/create"
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-sm hover:shadow-md"
+            className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-6 py-3 rounded-lg font-medium hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-sm hover:shadow-md"
           >
             Add New Book
           </Link>
@@ -156,11 +156,11 @@ const AdminBookManagePage = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by title, author, ISBN..."
-                className="flex-grow border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="flex-grow border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
               />
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md"
+                className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium shadow-sm hover:shadow-md"
               >
                 Search
               </button>
@@ -183,7 +183,7 @@ const AdminBookManagePage = () => {
                 onChange={(e) =>
                   handleFilterChange("genre", e.target.value || null)
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               >
                 <option value="">All Genres</option>
                 <option value="fiction">Fiction</option>
@@ -205,7 +205,7 @@ const AdminBookManagePage = () => {
                 onChange={(e) =>
                   handleFilterChange("language", e.target.value || null)
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               >
                 <option value="">All Languages</option>
                 <option value="english">English</option>
@@ -231,7 +231,7 @@ const AdminBookManagePage = () => {
                   onChange={(e) =>
                     handleFilterChange("minPrice", e.target.value || null)
                   }
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                 />
                 <span className="text-gray-500">-</span>
                 <input
@@ -242,7 +242,7 @@ const AdminBookManagePage = () => {
                   onChange={(e) =>
                     handleFilterChange("maxPrice", e.target.value || null)
                   }
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -253,7 +253,7 @@ const AdminBookManagePage = () => {
               <select
                 value={filters.sortBy || ""}
                 onChange={handleSortChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               >
                 <option value="">Default</option>
                 <option value="title_asc">Title (A-Z)</option>
@@ -299,7 +299,7 @@ const AdminBookManagePage = () => {
         {/* Loading and Error States */}
         {isLoading && (
           <div className="flex justify-center my-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-600"></div>
           </div>
         )}
 
@@ -325,7 +325,7 @@ const AdminBookManagePage = () => {
                           type="checkbox"
                           checked={selectAll}
                           onChange={() => setSelectAll(!selectAll)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
+                          className="h-4 w-4 text-gray-600 focus:ring-gray-500 border-gray-300 rounded transition-colors"
                         />
                       </div>
                     </th>
@@ -381,7 +381,7 @@ const AdminBookManagePage = () => {
                           type="checkbox"
                           checked={selectedBooks.includes(book.id)}
                           onChange={() => handleSelectBook(book.id)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
+                          className="h-4 w-4 text-gray-600 focus:ring-gray-500 border-gray-300 rounded transition-colors"
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -451,7 +451,7 @@ const AdminBookManagePage = () => {
                         <div className="flex space-x-3">
                           <Link
                             to={`/books/${book.id}`}
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            className="text-gray-600 hover:text-gray-800 transition-colors"
                           >
                             View
                           </Link>
@@ -533,7 +533,7 @@ const AdminBookManagePage = () => {
                     onClick={() => handlePageChange(number)}
                     className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium transition-colors ${
                       pagination.pageNumber === number
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        ? "bg-gray-600 text-white hover:bg-gray-700"
                         : "bg-white text-gray-700 hover:bg-gray-50"
                     }`}
                   >

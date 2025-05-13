@@ -64,7 +64,7 @@ const StaffManagement = () => {
           </div>
           <Link
             to="/admin/staff/create"
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-sm hover:shadow-md"
+            className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-6 py-3 rounded-lg font-medium hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-sm hover:shadow-md"
           >
             Add Staff Member
           </Link>
@@ -72,7 +72,7 @@ const StaffManagement = () => {
 
         {isLoading ? (
           <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-600"></div>
           </div>
         ) : staffMembers.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
@@ -124,7 +124,7 @@ const StaffManagement = () => {
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center shadow-sm">
                           <span className="text-white font-medium">
                             {`${staffMember.firstName.charAt(
                               0

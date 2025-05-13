@@ -109,9 +109,9 @@ const AdminDashboard = () => {
                   {stats.totalBooks}
                 </p>
               </div>
-              <div className="bg-blue-50 p-3 rounded-lg">
+              <div className="bg-gray-50 p-3 rounded-lg">
                 <svg
-                  className="w-8 h-8 text-blue-600"
+                  className="w-8 h-8 text-gray-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -128,7 +128,7 @@ const AdminDashboard = () => {
             </div>
             <Link
               to="/books"
-              className="inline-flex items-center mt-4 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+              className="inline-flex items-center mt-4 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
             >
               View All
               <svg
@@ -302,7 +302,7 @@ const AdminDashboard = () => {
             </h2>
             <Link
               to="/books"
-              className="text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors"
+              className="text-gray-600 text-sm font-medium hover:text-gray-800 transition-colors"
             >
               View All →
             </Link>
@@ -385,7 +385,7 @@ const AdminDashboard = () => {
                       <div className="flex space-x-3">
                         <Link
                           to={`/books/edit/${book.id}`}
-                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                          className="text-gray-600 hover:text-gray-800 transition-colors"
                         >
                           Edit
                         </Link>
@@ -436,7 +436,7 @@ const AdminDashboard = () => {
                   <tr>
                     <td colSpan="6" className="px-6 py-12 text-center">
                       <div className="flex justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-600"></div>
                       </div>
                     </td>
                   </tr>

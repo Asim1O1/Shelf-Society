@@ -97,7 +97,7 @@ const AnnouncementManagement = () => {
           </div>
           <Link
             to="/admin/announcements/create"
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-sm hover:shadow-md"
+            className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-6 py-3 rounded-lg font-medium hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-sm hover:shadow-md"
           >
             Add New Announcement
           </Link>
@@ -105,7 +105,7 @@ const AnnouncementManagement = () => {
 
         {isLoading ? (
           <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-600"></div>
           </div>
         ) : announcements.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
@@ -189,7 +189,7 @@ const AnnouncementManagement = () => {
                             </span>
                           )}
                           {isFuture && (
-                            <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                               Upcoming
                             </span>
                           )}
@@ -208,7 +208,7 @@ const AnnouncementManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => handleToggleActive(announcement)}
-                          className={`text-blue-600 hover:text-blue-800 mr-4 transition-colors ${
+                          className={`text-gray-600 hover:text-gray-800 mr-4 transition-colors ${
                             isExpired ? "opacity-50 cursor-not-allowed" : ""
                           }`}
                           disabled={isExpired}
