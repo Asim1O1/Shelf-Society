@@ -267,127 +267,140 @@ namespace Shelf_Society.Controllers
     [HttpPost]
     public async Task<ActionResult<ResponseHelper<OrderResponseDTO>>> PlaceOrder(PlaceOrderDTO dto)
     {
-      var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-      // Check if user has a cart
-      var cart = await _context.Carts
-          .FirstOrDefaultAsync(c => c.UserId == userId);
-
-      if (cart == null)
+      try
       {
-        return BadRequest(new ResponseHelper<OrderResponseDTO>
-        {
-          Success = false,
-          Message = "Your cart is empty",
-          Data = null
-        });
-      }
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-      // Get cart items
-      var cartItems = await _context.CartItems
-          .Include(ci => ci.Book)
-          .Where(ci => ci.CartId == cart.Id)
-          .ToListAsync();
-
-      if (cartItems.Count == 0)
-      {
-        return BadRequest(new ResponseHelper<OrderResponseDTO>
-        {
-          Success = false,
-          Message = "Your cart is empty",
-          Data = null
-        });
-      }
-
-      // Verify all items are available in requested quantities
-      foreach (var item in cartItems)
-      {
-        if (!item.Book.IsAvailable || item.Book.StockQuantity < item.Quantity)
+        // Check if user has a cart
+        var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
+        if (cart == null)
         {
           return BadRequest(new ResponseHelper<OrderResponseDTO>
           {
             Success = false,
-            Message = $"Item '{item.Book.Title}' is not available in the requested quantity",
+            Message = "Your cart is empty",
             Data = null
           });
         }
-      }
 
-      // Calculate order totals
-      decimal totalAmount = cartItems.Sum(ci => ci.Book.Price * ci.Quantity);
+        // Get cart items
+        var cartItems = await _context.CartItems
+            .Include(ci => ci.Book)
+            .Where(ci => ci.CartId == cart.Id)
+            .ToListAsync();
 
-      // Apply discounts
-      decimal discountPercentage = 0;
-      int totalItems = cartItems.Sum(ci => ci.Quantity);
-
-      // Apply 5% discount for orders with 5+ books
-      if (totalItems >= 5)
-      {
-        discountPercentage = 5;
-      }
-
-      // Check if user qualifies for 10% loyalty discount (10 or more completed orders)
-      var completedOrdersCount = await _context.Orders
-          .CountAsync(o => o.UserId == userId && o.Status == OrderStatus.Completed);
-
-      if (completedOrdersCount >= 10)
-      {
-        discountPercentage += 10;
-      }
-
-      decimal discountAmount = totalAmount * (discountPercentage / 100m);
-      decimal finalAmount = totalAmount - discountAmount;
-
-      // Generate a unique claim code (6 alphanumeric characters)
-      string claimCode = GenerateClaimCode();
-
-      // Create the order
-      var order = new Order
-      {
-        UserId = userId,
-        ClaimCode = claimCode,
-        Status = OrderStatus.Pending,
-        TotalAmount = totalAmount,
-        DiscountPercentage = discountPercentage,
-        DiscountAmount = discountAmount,
-        FinalAmount = finalAmount,
-        OrderDate = DateTime.UtcNow,
-        CreatedAt = DateTime.UtcNow,
-        UpdatedAt = DateTime.UtcNow
-      };
-
-      _context.Orders.Add(order);
-      var user = await _context.Users.FindAsync(userId);
-      await _emailService.SendOrderConfirmationEmailAsync(order, user);
-      await _context.SaveChangesAsync();
-
-      // Create order items
-      foreach (var cartItem in cartItems)
-      {
-        var orderItem = new OrderItem
+        if (cartItems.Count == 0)
         {
-          OrderId = order.Id,
-          BookId = cartItem.BookId,
-          Quantity = cartItem.Quantity,
-          Price = cartItem.Book.Price,
-          Subtotal = cartItem.Book.Price * cartItem.Quantity,
-          CreatedAt = DateTime.UtcNow
+          return BadRequest(new ResponseHelper<OrderResponseDTO>
+          {
+            Success = false,
+            Message = "Your cart is empty",
+            Data = null
+          });
+        }
+
+        // Check stock availability
+        foreach (var item in cartItems)
+        {
+          if (!item.Book.IsAvailable || item.Book.StockQuantity < item.Quantity)
+          {
+            return BadRequest(new ResponseHelper<OrderResponseDTO>
+            {
+              Success = false,
+              Message = $"Item '{item.Book.Title}' is not available in the requested quantity",
+              Data = null
+            });
+          }
+        }
+
+        // Calculate totals and discounts
+        decimal totalAmount = cartItems.Sum(ci => ci.Book.Price * ci.Quantity);
+        int totalItems = cartItems.Sum(ci => ci.Quantity);
+        decimal discountPercentage = totalItems >= 5 ? 5 : 0;
+
+        var completedOrdersCount = await _context.Orders
+            .CountAsync(o => o.UserId == userId && o.Status == OrderStatus.Completed);
+
+        if (completedOrdersCount >= 10)
+        {
+          discountPercentage += 10;
+        }
+
+        decimal discountAmount = totalAmount * (discountPercentage / 100m);
+        decimal finalAmount = totalAmount - discountAmount;
+        string claimCode = GenerateClaimCode();
+
+        // Create order
+        var order = new Order
+        {
+          UserId = userId,
+          ClaimCode = claimCode,
+          Status = OrderStatus.Pending,
+          TotalAmount = totalAmount,
+          DiscountPercentage = discountPercentage,
+          DiscountAmount = discountAmount,
+          FinalAmount = finalAmount,
+          OrderDate = DateTime.UtcNow,
+          CreatedAt = DateTime.UtcNow,
+          UpdatedAt = DateTime.UtcNow
         };
 
-        _context.OrderItems.Add(orderItem);
+        _context.Orders.Add(order);
+        await _context.SaveChangesAsync();
 
-        // Update book stock quantity
-        cartItem.Book.StockQuantity -= cartItem.Quantity;
+        // Send email
+        try
+        {
+          var user = await _context.Users.FindAsync(userId);
+          if (user != null)
+          {
+            await _emailService.SendOrderConfirmationEmailAsync(order, user);
+          }
+        }
+        catch (Exception emailEx)
+        {
+          // Log email sending failure, don't interrupt the order placement
+          Console.WriteLine($"Failed to send confirmation email: {emailEx.Message}");
+        }
+
+        // Create order items and update stock
+        foreach (var cartItem in cartItems)
+        {
+          var orderItem = new OrderItem
+          {
+            OrderId = order.Id,
+            BookId = cartItem.BookId,
+            Quantity = cartItem.Quantity,
+            Price = cartItem.Book.Price,
+            Subtotal = cartItem.Book.Price * cartItem.Quantity,
+            CreatedAt = DateTime.UtcNow
+          };
+
+          _context.OrderItems.Add(orderItem);
+          cartItem.Book.StockQuantity -= cartItem.Quantity;
+        }
+
+        // Clear cart
+        _context.CartItems.RemoveRange(cartItems);
+        await _context.SaveChangesAsync();
+
+        // Return order response
+        return await GetOrderById(order.Id);
       }
+      catch (Exception ex)
+      {
+        // Global catch for any unexpected errors
+        Console.WriteLine($"Order placement failed: {ex.Message}");
 
-      // Clear the cart
-      _context.CartItems.RemoveRange(cartItems);
-
-      await _context.SaveChangesAsync();
-
-      // Return the created order
-      return await GetOrderById(order.Id);
+        return StatusCode(500, new ResponseHelper<OrderResponseDTO>
+        {
+          Success = false,
+          Message = "An unexpected error occurred while placing the order.",
+          Data = null
+        });
+      }
     }
+
 
     // Cancel an order
     [HttpPost("{id}/cancel")]
