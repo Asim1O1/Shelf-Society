@@ -8,26 +8,21 @@ const BookFilters = ({ filters, onFilterChange }) => {
   const [localFilters, setLocalFilters] = useState(filters);
 
   useEffect(() => {
-    // Fetch genres and authors for filter options
     const fetchFilterOptions = async () => {
       try {
-        // This would ideally be API endpoints specifically for filter options
-        // For now, we'll simulate it with book data
         const response = await axiosInstance.get("/books?pageSize=100");
         if (response.data.success) {
           const books = response.data.data.items;
 
-          // Extract unique genres
           const uniqueGenres = [
             ...new Set(books.map((book) => book.genre)),
           ].filter(Boolean);
           setGenres(uniqueGenres.sort());
 
-          // Extract unique authors (limited to prevent too many options)
           const uniqueAuthors = [
             ...new Set(books.map((book) => book.author)),
           ].filter(Boolean);
-          setAuthors(uniqueAuthors.sort().slice(0, 20)); // Limit to top 20 authors
+          setAuthors(uniqueAuthors.sort().slice(0, 20));
         }
       } catch (error) {
         console.error("Error fetching filter options:", error);
@@ -37,12 +32,10 @@ const BookFilters = ({ filters, onFilterChange }) => {
     fetchFilterOptions();
   }, []);
 
-  // Update local state when props change
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setLocalFilters({
@@ -51,13 +44,11 @@ const BookFilters = ({ filters, onFilterChange }) => {
     });
   };
 
-  // Apply filters when form is submitted
   const handleSubmit = (e) => {
     e.preventDefault();
     onFilterChange(localFilters);
   };
 
-  // Clear all filters
   const handleClearFilters = () => {
     const clearedFilters = {
       ...filters,
@@ -72,15 +63,13 @@ const BookFilters = ({ filters, onFilterChange }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <h2 className="text-lg font-semibold mb-4">Filters</h2>
-
-      <form onSubmit={handleSubmit}>
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Search */}
-        <div className="mb-4">
+        <div>
           <label
             htmlFor="search"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 mb-2"
           >
             Search
           </label>
@@ -91,15 +80,15 @@ const BookFilters = ({ filters, onFilterChange }) => {
             value={localFilters.search}
             onChange={handleInputChange}
             placeholder="Title, author, ISBN..."
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+            className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-red-300 focus:ring-2 focus:ring-red-100 transition-all duration-200"
           />
         </div>
 
         {/* Genre */}
-        <div className="mb-4">
+        <div>
           <label
             htmlFor="genre"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 mb-2"
           >
             Genre
           </label>
@@ -108,7 +97,7 @@ const BookFilters = ({ filters, onFilterChange }) => {
             name="genre"
             value={localFilters.genre}
             onChange={handleInputChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+            className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-red-300 focus:ring-2 focus:ring-red-100 transition-all duration-200"
           >
             <option value="">All Genres</option>
             {genres.map((genre) => (
@@ -120,10 +109,10 @@ const BookFilters = ({ filters, onFilterChange }) => {
         </div>
 
         {/* Author */}
-        <div className="mb-4">
+        <div>
           <label
             htmlFor="author"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 mb-2"
           >
             Author
           </label>
@@ -132,7 +121,7 @@ const BookFilters = ({ filters, onFilterChange }) => {
             name="author"
             value={localFilters.author}
             onChange={handleInputChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+            className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-red-300 focus:ring-2 focus:ring-red-100 transition-all duration-200"
           >
             <option value="">All Authors</option>
             {authors.map((author) => (
@@ -144,41 +133,55 @@ const BookFilters = ({ filters, onFilterChange }) => {
         </div>
 
         {/* Price Range */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Price Range
           </label>
-          <div className="flex space-x-2">
-            <input
-              type="number"
-              id="minPrice"
-              name="minPrice"
-              min="0"
-              step="0.01"
-              value={localFilters.minPrice}
-              onChange={handleInputChange}
-              placeholder="Min"
-              className="w-1/2 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400"
-            />
-            <input
-              type="number"
-              id="maxPrice"
-              name="maxPrice"
-              min="0"
-              step="0.01"
-              value={localFilters.maxPrice}
-              onChange={handleInputChange}
-              placeholder="Max"
-              className="w-1/2 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400"
-            />
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  $
+                </span>
+                <input
+                  type="number"
+                  id="minPrice"
+                  name="minPrice"
+                  min="0"
+                  step="0.01"
+                  value={localFilters.minPrice}
+                  onChange={handleInputChange}
+                  placeholder="Min"
+                  className="w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-red-300 focus:ring-2 focus:ring-red-100 transition-all duration-200"
+                />
+              </div>
+            </div>
+            <div className="flex-1">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  $
+                </span>
+                <input
+                  type="number"
+                  id="maxPrice"
+                  name="maxPrice"
+                  min="0"
+                  step="0.01"
+                  value={localFilters.maxPrice}
+                  onChange={handleInputChange}
+                  placeholder="Max"
+                  className="w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-red-300 focus:ring-2 focus:ring-red-100 transition-all duration-200"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex flex-col space-y-2">
+        <div className="space-y-3 pt-4">
           <button
             type="submit"
-            className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition duration-300"
+            className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
             Apply Filters
           </button>
@@ -186,7 +189,7 @@ const BookFilters = ({ filters, onFilterChange }) => {
           <button
             type="button"
             onClick={handleClearFilters}
-            className="w-full bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition duration-300"
+            className="w-full bg-white text-gray-700 py-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors font-medium"
           >
             Clear Filters
           </button>

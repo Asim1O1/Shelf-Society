@@ -110,155 +110,196 @@ const CreateDiscount = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Add New Discount</h1>
-        <p className="text-gray-600">Create a discount for a book</p>
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-900">
+          Add New Discount
+        </h1>
+        <p className="text-gray-500 mt-1 text-sm">
+          Create a discount for a book
+        </p>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         {isLoadingBooks ? (
-          <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 gap-6">
-              <div>
-                <label className="block text-gray-700 mb-2" htmlFor="bookId">
-                  Book
-                </label>
-                <select
-                  id="bookId"
-                  name="bookId"
-                  value={formData.bookId}
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <div>
+              <label
+                htmlFor="bookId"
+                className="block text-sm font-medium text-gray-900 mb-2"
+              >
+                Book <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="bookId"
+                name="bookId"
+                value={formData.bookId}
+                onChange={handleChange}
+                className={`w-full px-4 py-2.5 border rounded-lg shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent sm:text-sm transition-colors ${
+                  errors.bookId
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-200 bg-white"
+                }`}
+              >
+                <option value="">Select a book</option>
+                {books.map((book) => (
+                  <option key={book.id} value={book.id}>
+                    {book.title} by {book.author}
+                  </option>
+                ))}
+              </select>
+              {errors.bookId && (
+                <p className="mt-2 text-sm text-red-500">{errors.bookId}</p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="discountPercentage"
+                className="block text-sm font-medium text-gray-900 mb-2"
+              >
+                Discount Percentage <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  id="discountPercentage"
+                  name="discountPercentage"
+                  value={formData.discountPercentage}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded ${
-                    errors.bookId ? "border-red-500" : "border-gray-300"
+                  min="1"
+                  max="100"
+                  step="0.01"
+                  className={`w-full px-4 py-2.5 border rounded-lg shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent sm:text-sm transition-colors ${
+                    errors.discountPercentage
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-200 bg-white"
                   }`}
+                  placeholder="10"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span className="text-gray-500 sm:text-sm">%</span>
+                </div>
+              </div>
+              {errors.discountPercentage && (
+                <p className="mt-2 text-sm text-red-500">
+                  {errors.discountPercentage}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="onSale"
+                name="onSale"
+                checked={formData.onSale}
+                onChange={handleChange}
+                className="h-4 w-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
+              />
+              <label htmlFor="onSale" className="ml-2 text-sm text-gray-700">
+                Mark as "On Sale" (displays a sale badge)
+              </label>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label
+                  htmlFor="startDate"
+                  className="block text-sm font-medium text-gray-900 mb-2"
                 >
-                  <option value="">Select a book</option>
-                  {books.map((book) => (
-                    <option key={book.id} value={book.id}>
-                      {book.title} by {book.author}
-                    </option>
-                  ))}
-                </select>
-                {errors.bookId && (
-                  <p className="text-red-500 text-sm mt-1">{errors.bookId}</p>
+                  Start Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  id="startDate"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-2.5 border rounded-lg shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent sm:text-sm transition-colors ${
+                    errors.startDate
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-200 bg-white"
+                  }`}
+                />
+                {errors.startDate && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {errors.startDate}
+                  </p>
                 )}
               </div>
 
               <div>
                 <label
-                  className="block text-gray-700 mb-2"
-                  htmlFor="discountPercentage"
+                  htmlFor="endDate"
+                  className="block text-sm font-medium text-gray-900 mb-2"
                 >
-                  Discount Percentage
+                  End Date <span className="text-red-500">*</span>
                 </label>
-                <div className="flex items-center">
-                  <input
-                    type="number"
-                    id="discountPercentage"
-                    name="discountPercentage"
-                    value={formData.discountPercentage}
-                    onChange={handleChange}
-                    min="1"
-                    max="100"
-                    step="0.01"
-                    className={`w-full p-2 border rounded ${
-                      errors.discountPercentage
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
-                  />
-                  <span className="ml-2">%</span>
-                </div>
-                {errors.discountPercentage && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.discountPercentage}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex items-center">
                 <input
-                  type="checkbox"
-                  id="onSale"
-                  name="onSale"
-                  checked={formData.onSale}
+                  type="date"
+                  id="endDate"
+                  name="endDate"
+                  value={formData.endDate}
                   onChange={handleChange}
-                  className="h-5 w-5 text-blue-600"
+                  className={`w-full px-4 py-2.5 border rounded-lg shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent sm:text-sm transition-colors ${
+                    errors.endDate
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-200 bg-white"
+                  }`}
                 />
-                <label className="ml-2 text-gray-700" htmlFor="onSale">
-                  Mark as "On Sale" (displays a sale badge)
-                </label>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    className="block text-gray-700 mb-2"
-                    htmlFor="startDate"
-                  >
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
-                    value={formData.startDate}
-                    onChange={handleChange}
-                    className={`w-full p-2 border rounded ${
-                      errors.startDate ? "border-red-500" : "border-gray-300"
-                    }`}
-                  />
-                  {errors.startDate && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.startDate}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 mb-2" htmlFor="endDate">
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    id="endDate"
-                    name="endDate"
-                    value={formData.endDate}
-                    onChange={handleChange}
-                    className={`w-full p-2 border rounded ${
-                      errors.endDate ? "border-red-500" : "border-gray-300"
-                    }`}
-                  />
-                  {errors.endDate && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.endDate}
-                    </p>
-                  )}
-                </div>
+                {errors.endDate && (
+                  <p className="mt-2 text-sm text-red-500">{errors.endDate}</p>
+                )}
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="pt-4 flex justify-end space-x-3 border-t border-gray-200">
               <button
                 type="button"
                 onClick={() => navigate("/admin/discounts")}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded mr-2 hover:bg-gray-300"
+                className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${
-                  isLoading ? "opacity-70 cursor-not-allowed" : ""
+                className={`px-5 py-2.5 text-sm font-medium text-white bg-gray-900 border border-transparent rounded-lg shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 transition-colors ${
+                  isLoading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
-                {isLoading ? "Creating..." : "Create Discount"}
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Creating...
+                  </span>
+                ) : (
+                  "Create Discount"
+                )}
               </button>
             </div>
           </form>

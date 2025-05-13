@@ -1,3 +1,4 @@
+// src/components/reviews/ReviewForm.jsx
 import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
 
@@ -48,60 +49,62 @@ const ReviewForm = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h3 className="text-lg font-semibold mb-4">
-        {initialData ? "Edit Review" : `Write a Review for "${bookTitle}"`}
+    <div className="bg-white rounded-lg border border-gray-100 p-6">
+      <h3 className="text-xl font-light text-gray-900 mb-6">
+        {initialData ? "Edit Review" : `Review "${bookTitle}"`}
       </h3>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Rating <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Rating
           </label>
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
             <StarRating
               rating={rating}
               size="large"
               interactive={true}
               onChange={setRating}
             />
-            <span className="ml-2 text-sm text-gray-500">
+            <span className="text-sm text-gray-500">
               {rating > 0 ? `${rating} out of 5 stars` : "Select a rating"}
             </span>
           </div>
           {errors.rating && (
-            <p className="mt-1 text-sm text-red-600">{errors.rating}</p>
+            <p className="mt-2 text-sm text-red-600">{errors.rating}</p>
           )}
         </div>
 
         <div>
           <label
             htmlFor="comment"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Review <span className="text-red-500">*</span>
+            Your Review
           </label>
           <textarea
             id="comment"
-            rows={4}
+            rows={5}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 ${
-              errors.comment ? "border-red-500" : "border-gray-300"
+            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 ${
+              errors.comment
+                ? "border-red-300 focus:border-red-500 focus:ring-red-100"
+                : "border-gray-200 focus:border-red-300 focus:ring-red-100"
             }`}
             placeholder="Share your thoughts on this book..."
           />
           {errors.comment && (
-            <p className="mt-1 text-sm text-red-600">{errors.comment}</p>
+            <p className="mt-2 text-sm text-red-600">{errors.comment}</p>
           )}
         </div>
 
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-end gap-3 pt-4">
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-5 py-2.5 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
             >
               Cancel
             </button>
@@ -109,7 +112,7 @@ const ReviewForm = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-indigo-400"
+            className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 transition-colors font-medium"
           >
             {isLoading ? (
               <span className="flex items-center">

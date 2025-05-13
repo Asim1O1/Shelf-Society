@@ -133,12 +133,12 @@ const AdminBookManagePage = () => {
     <div className="flex">
       <AdminSidebar />
 
-      <div className="flex-1 p-8 bg-gray-100 min-h-screen">
+      <div className="flex-1 p-8 bg-black-100 min-h-screen">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Manage Books</h1>
           <Link
             to="/books/create"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            className="bg-black-600 text-white px-4 py-2 rounded hover:bg-black-700 transition"
           >
             Add New Book
           </Link>

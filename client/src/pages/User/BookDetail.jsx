@@ -5,11 +5,10 @@ import { toast } from "react-toastify";
 
 import AnnouncementBanner from "../../components/common/AnnouncementBanner";
 import Navbar from "../../components/common/NavBar";
-import StarRating from "../../components/reviews/StarRating"; // Import the StarRating component
-// Import the ConfirmDeleteModal component
+import StarRating from "../../components/Reviews/StarRating";
 import useAuthStore from "../../stores/useAuthStore";
 import useCartStore from "../../stores/useCartStore";
-import useReviewStore from "../../stores/useReviewStore"; // Import the ReviewStore
+import useReviewStore from "../../stores/useReviewStore";
 import useWhitelist from "../../stores/useWhitelist";
 import axiosInstance from "../../utils/axiosInstance";
 
@@ -21,6 +20,8 @@ import {
   Shield,
   ShoppingCart,
   Truck,
+  BookOpen,
+  Star,
 } from "lucide-react";
 import ConfirmDeleteModal from "../../components/Reviews/ConfirmDeleteModal";
 import ReviewForm from "../../components/Reviews/ReviewForm";
@@ -359,74 +360,76 @@ const BookDetailPage = () => {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-6 md:p-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              {/* Image Gallery */}
-              <div>
-                <div className="relative group">
-                  {/* Main Image */}
-                  <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-100">
-                    {book.onSale && (
-                      <div className="absolute top-4 left-4 z-10">
-                        <span className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-full shadow-lg animate-pulse">
-                          ON SALE
-                        </span>
+              {/* Image Gallery - FIXED SIZE */}
+              <div className="flex justify-center md:justify-start">
+                <div className="w-64 md:w-72 lg:w-80">
+                  <div className="relative group">
+                    {/* Main Image */}
+                    <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-100">
+                      {book.onSale && (
+                        <div className="absolute top-3 left-3 z-10">
+                          <span className="inline-flex items-center px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-md">
+                            ON SALE
+                          </span>
+                        </div>
+                      )}
+
+                      <img
+                        src={
+                          currentImage?.imageUrl ||
+                          "https://via.placeholder.com/320x480?text=No+Image"
+                        }
+                        alt={currentImage?.caption || book.title}
+                        className="w-full h-full object-cover"
+                      />
+
+                      {/* Navigation arrows */}
+                      {allImages.length > 1 && (
+                        <>
+                          <button
+                            onClick={prevImage}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                            aria-label="Previous image"
+                          >
+                            <ChevronLeft className="w-5 h-5 text-gray-800" />
+                          </button>
+                          <button
+                            onClick={nextImage}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                            aria-label="Next image"
+                          >
+                            <ChevronRight className="w-5 h-5 text-gray-800" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Thumbnail navigation */}
+                    {allImages.length > 1 && (
+                      <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                        {allImages.map((image, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`relative flex-shrink-0 w-16 h-24 rounded-lg overflow-hidden transition-all ${
+                              index === currentImageIndex
+                                ? "ring-2 ring-red-600 shadow-md"
+                                : "ring-1 ring-gray-200 hover:ring-gray-300"
+                            }`}
+                          >
+                            <img
+                              src={
+                                image.imageUrl ||
+                                "https://via.placeholder.com/80x120?text=No+Image"
+                              }
+                              alt={image.caption || `Book image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        ))}
                       </div>
                     )}
-
-                    <img
-                      src={
-                        currentImage?.imageUrl ||
-                        "https://via.placeholder.com/400x600?text=No+Image"
-                      }
-                      alt={currentImage?.caption || book.title}
-                      className="w-full h-full object-cover"
-                    />
-
-                    {/* Navigation arrows */}
-                    {allImages.length > 1 && (
-                      <>
-                        <button
-                          onClick={prevImage}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
-                          aria-label="Previous image"
-                        >
-                          <ChevronLeft className="w-6 h-6 text-gray-800" />
-                        </button>
-                        <button
-                          onClick={nextImage}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
-                          aria-label="Next image"
-                        >
-                          <ChevronRight className="w-6 h-6 text-gray-800" />
-                        </button>
-                      </>
-                    )}
                   </div>
-
-                  {/* Thumbnail navigation */}
-                  {allImages.length > 1 && (
-                    <div className="mt-6 flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-                      {allImages.map((image, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className={`relative flex-shrink-0 w-20 h-28 rounded-lg overflow-hidden transition-all ${
-                            index === currentImageIndex
-                              ? "ring-2 ring-red-600 shadow-lg scale-105"
-                              : "ring-1 ring-gray-200 hover:ring-gray-300"
-                          }`}
-                        >
-                          <img
-                            src={
-                              image.imageUrl ||
-                              "https://via.placeholder.com/100x150?text=No+Image"
-                            }
-                            alt={image.caption || `Book image ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
 

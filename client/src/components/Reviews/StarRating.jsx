@@ -1,3 +1,4 @@
+// src/components/reviews/StarRating.jsx
 const StarRating = ({
   rating,
   size = "medium",
@@ -15,7 +16,9 @@ const StarRating = ({
       <svg
         key={index}
         className={`${sizeClasses[size]} ${
-          interactive ? "cursor-pointer" : ""
+          interactive
+            ? "cursor-pointer hover:scale-110 transition-transform"
+            : ""
         } ${filled ? "text-yellow-400" : "text-gray-300"}`}
         fill="currentColor"
         viewBox="0 0 20 20"
@@ -35,7 +38,7 @@ const StarRating = ({
     stars.push(renderStar(i < ratingValue, i));
   }
 
-  return <div className="flex">{stars}</div>;
+  return <div className="flex gap-0.5">{stars}</div>;
 };
 
 export default StarRating;

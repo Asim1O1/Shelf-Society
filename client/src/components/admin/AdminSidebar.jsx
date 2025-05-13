@@ -1,3 +1,4 @@
+// src/components/admin/AdminSidebar.jsx
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
@@ -158,100 +159,27 @@ const AdminSidebar = () => {
   ];
 
   return (
-    <div className="w-64 bg-white shadow-md h-screen sticky top-0">
+    <div className="w-64 bg-white border-r border-gray-200 h-screen sticky top-0 flex flex-col">
       {/* Sidebar Header */}
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center">
-            <svg
-              className="w-8 h-8 text-blue-600"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M21 5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V22c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5V5z" />
-              <path d="M3 5c1.1-.35 2.3-.5 3.5-.5 1.7 0 4.15.65 5.5 1.5V22c-1.35-.85-3.8-1.5-5.5-1.5-1.2 0-2.4.15-3.5.5V5z" />
-            </svg>
-            <span className="ml-2 text-lg font-bold">Shelf Society</span>
-          </Link>
-          <button
-            className="md:hidden focus:outline-none"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      <div className="px-6 py-8">
+        <Link to="/" className="flex items-center">
+          <svg
+            className="w-8 h-8 text-gray-900"
+            fill="currentColor"
+            viewBox="0 0 24 24"
           >
-            {isMobileMenuOpen ? (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                ></path>
-              </svg>
-            ) : (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                ></path>
-              </svg>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Navigation Links */}
-      <nav className={`p-4 ${isMobileMenuOpen ? "block" : "hidden md:block"}`}>
-        <ul className="space-y-2">
-          {navItems.map((item, index) => (
-            <li key={index}>
-              <Link
-                to={item.path}
-                className={`flex items-center p-2 rounded-md ${
-                  location.pathname === item.path
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {item.icon}
-                <span className="ml-3">{item.name}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <div className="pt-8 border-t mt-6">
-          <div className="flex items-center p-2">
-            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
-              {user?.fullName?.charAt(0) || "A"}
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-700">
-                {user?.fullName || "Admin"}
-              </p>
-              <p className="text-xs text-gray-500">
-                {user?.email || "admin@example.com"}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="mt-2 w-full flex items-center p-2 rounded-md text-red-600 hover:bg-red-50"
-          >
+            <path d="M21 5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V22c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5V5z" />
+            <path d="M3 5c1.1-.35 2.3-.5 3.5-.5 1.7 0 4.15.65 5.5 1.5V22c-1.35-.85-3.8-1.5-5.5-1.5-1.2 0-2.4.15-3.5.5V5z" />
+          </svg>
+          <span className="ml-3 text-xl font-medium text-gray-900">Books</span>
+        </Link>
+        <button
+          className="md:hidden absolute right-6 top-8 focus:outline-none"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? (
             <svg
-              className="w-5 h-5"
+              className="w-6 h-6 text-gray-700"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -261,13 +189,103 @@ const AdminSidebar = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                d="M6 18L18 6M6 6l12 12"
               ></path>
             </svg>
-            <span className="ml-3">Logout</span>
-          </button>
-        </div>
+          ) : (
+            <svg
+              className="w-6 h-6 text-gray-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              ></path>
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* Navigation Links */}
+      <nav
+        className={`flex-1 px-3 overflow-y-auto ${
+          isMobileMenuOpen ? "block" : "hidden md:block"
+        }`}
+      >
+        <ul className="space-y-1">
+          {navItems.map((item, index) => (
+            <li key={index}>
+              <Link
+                to={item.path}
+                className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  location.pathname === item.path
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                <span
+                  className={
+                    location.pathname === item.path
+                      ? "text-white"
+                      : "text-gray-500"
+                  }
+                >
+                  {item.icon}
+                </span>
+                <span className="ml-3">{item.name}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </nav>
+
+      {/* User Section - Fixed at bottom */}
+      <div
+        className={`border-t border-gray-200 p-3 ${
+          isMobileMenuOpen ? "block" : "hidden md:block"
+        }`}
+      >
+        <div className="mb-4">
+          <div className="flex items-center">
+            <div className="h-10 w-10 rounded-full bg-gray-900 flex items-center justify-center text-white font-medium">
+              {user?.fullName?.charAt(0) || "A"}
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-900">
+                {user?.fullName || "Admin"}
+              </p>
+              <p className="text-xs text-gray-500">
+                {user?.email || "admin@example.com"}
+              </p>
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-150 rounded-lg"
+        >
+          <svg
+            className="w-5 h-5 text-gray-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            ></path>
+          </svg>
+          <span className="ml-3">Logout</span>
+        </button>
+      </div>
     </div>
   );
 };
