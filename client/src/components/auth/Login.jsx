@@ -37,7 +37,7 @@ const Login = () => {
 
         // Navigate after a short delay to let the user see the success message
         setTimeout(() => {
-          navigate("/dashboard");
+          navigate("/");
         }, 1500);
       } else {
         ToastUtility.error(result.message);
