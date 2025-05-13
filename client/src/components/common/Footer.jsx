@@ -1,15 +1,15 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import {
-  FiFacebook,
-  FiTwitter,
-  FiInstagram,
-  FiMail,
-  FiPhone,
-  FiMapPin,
   FiChevronDown,
   FiChevronUp,
+  FiFacebook,
+  FiInstagram,
+  FiMail,
+  FiMapPin,
+  FiPhone,
+  FiTwitter,
 } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -208,43 +208,6 @@ const Footer = () => {
                 <p className="text-sm">Saturday: 10AM - 8PM</p>
                 <p className="text-sm">Sunday: 11AM - 6PM</p>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Newsletter Section */}
-      <div className="border-t border-gray-800 py-6 md:py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="mb-4 md:mb-0 text-center md:text-left">
-              <h3 className="text-lg font-semibold text-white mb-2">
-                Subscribe to Our Newsletter
-              </h3>
-              <p className="text-sm max-w-md">
-                Stay updated with new arrivals, special promotions, and reading
-                recommendations.
-              </p>
-            </div>
-            <div className="w-full md:w-auto">
-              <form className="flex flex-col sm:flex-row gap-2">
-                <label htmlFor="newsletter-email" className="sr-only">
-                  Email address
-                </label>
-                <input
-                  id="newsletter-email"
-                  type="email"
-                  placeholder="Your email address"
-                  className="w-full md:w-64 px-4 py-2 rounded-lg sm:rounded-r-none focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg sm:rounded-l-none font-medium text-white transition-colors w-full sm:w-auto"
-                >
-                  Subscribe
-                </button>
-              </form>
             </div>
           </div>
         </div>

@@ -1,9 +1,9 @@
-import { ArrowRight, BookOpen, Calendar, Search, Star } from "lucide-react";
+import { ArrowRight, BookOpen, Search, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import OnSaleBooks from "../../components/book/OnSaleBook";
 import AnnouncementBanner from "../../components/common/AnnouncementBanner";
-import Navbar from "../../components/common/NavBar";
 import Footer from "../../components/common/Footer";
+import Navbar from "../../components/common/NavBar";
 import axiosInstance from "../../utils/axiosInstance";
 
 const HomePage = () => {
@@ -151,24 +151,6 @@ const HomePage = () => {
                       </button>
                     </div>
                   </form>
-
-                  {/* Stats - Minimal design */}
-                  <div className="flex gap-12 pt-4">
-                    <div>
-                      <p className="text-3xl font-light text-gray-900">
-                        {genres.length}+
-                      </p>
-                      <p className="text-sm text-gray-500 font-light">Genres</p>
-                    </div>
-                    <div>
-                      <p className="text-3xl font-light text-gray-900">1000+</p>
-                      <p className="text-sm text-gray-500 font-light">Books</p>
-                    </div>
-                    <div>
-                      <p className="text-3xl font-light text-gray-900">4.5★</p>
-                      <p className="text-sm text-gray-500 font-light">Rating</p>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Hero Image - Cleaner presentation */}

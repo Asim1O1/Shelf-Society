@@ -11,9 +11,9 @@ import {
   FaUser,
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import useAuthStore from "../../stores/useAuthStore";
 import useStaffStore from "../../stores/useStaffStore";
+import ToastUtility from "../../utils/ToastUtility";
 
 const StaffOrderDetails = () => {
   const { id } = useParams();
@@ -28,7 +28,7 @@ const StaffOrderDetails = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       if (user.role !== "Staff" && user.role !== "Admin") {
-        toast.error("Unauthorized access");
+        ToastUtility.error("Unauthorized access");
         navigate("/");
       }
     } else {
@@ -52,7 +52,8 @@ const StaffOrderDetails = () => {
       const result = await updateOrderStatus(id, newStatus);
 
       if (result.success) {
-        toast.success(`Order status updated to ${newStatus}`);
+        ToastUtility.success(`Order status updated to ${newStatus}`);
+        await getOrderDetail(id);
       }
     } catch (error) {
       console.error("Error updating status:", error);

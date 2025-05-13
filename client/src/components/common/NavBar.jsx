@@ -3,6 +3,20 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
+import {
+  Book,
+  ChevronDown,
+  Heart,
+  Home,
+  LogIn,
+  LogOut,
+  Menu,
+  Package,
+  Settings,
+  ShoppingCart,
+  User,
+  UserPlus,
+} from "lucide-react";
 import useAuthStore from "../../stores/useAuthStore";
 import useCartStore from "../../stores/useCartStore";
 import NotificationsPanel from "./NotificationPanel";
@@ -46,7 +60,11 @@ const ConfirmationModal = ({
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+<<<<<<< HEAD
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+=======
+
+>>>>>>> c2e8d12 (multiple UI updates, duplicate notification display bug fixed)
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
   const { cart } = useCartStore();
@@ -107,6 +125,7 @@ const Navbar = () => {
   };
 
   return (
+<<<<<<< HEAD
     <>
       <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 max-w-7xl">
@@ -124,6 +143,126 @@ const Navbar = () => {
                 </svg>
                 <span className="ml-2 text-xl font-light text-gray-900 group-hover:text-red-600 transition-colors duration-200">
                   Books
+=======
+    <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo and Main Navigation */}
+          <div className="flex items-center space-x-8">
+            <Link to="/" className="flex items-center group">
+              <svg
+                className="w-8 h-8 text-red-600 group-hover:text-red-700 transition-colors"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M21 5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V22c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5V5z" />
+                <path d="M3 5c1.1-.35 2.3-.5 3.5-.5 1.7 0 4.15.65 5.5 1.5V22c-1.35-.85-3.8-1.5-5.5-1.5-1.2 0-2.4.15-3.5.5V5z" />
+              </svg>
+              <span className="ml-2 text-xl font-light text-gray-900 group-hover:text-red-600 transition-colors">
+                Shelf Society
+              </span>
+            </Link>
+
+            {/* Desktop Menu */}
+            <div className="hidden md:flex items-center space-x-6">
+              <Link
+                to="/"
+                className="flex items-center text-sm font-light text-gray-700 hover:text-red-600 transition-colors"
+              >
+                <Home size={16} className="mr-1" />
+                <span>Home</span>
+              </Link>
+              <Link
+                to="/books"
+                className="flex items-center text-sm font-light text-gray-700 hover:text-red-600 transition-colors"
+              >
+                <Book size={16} className="mr-1" />
+                <span>Books</span>
+              </Link>
+              <Link
+                to="/whitelist"
+                className="flex items-center text-sm font-light text-gray-700 hover:text-red-600 transition-colors"
+              >
+                <Heart size={16} className="mr-1" />
+                <span>Wishlist</span>
+              </Link>
+
+              {/* Admin link - only show if user is admin */}
+              {isAuthenticated && user?.role === "Admin" && (
+                <Link
+                  to="/admin"
+                  className="flex items-center text-sm font-light text-gray-700 hover:text-red-600 transition-colors"
+                >
+                  <ShieldCheck size={16} className="mr-1" />
+                  <span>Admin</span>
+                </Link>
+              )}
+
+              {/* Staff link - only show if user is staff */}
+              {isAuthenticated &&
+                (user?.role === "Staff" || user?.role === "Admin") && (
+                  <Link
+                    to="/staff"
+                    className="flex items-center text-sm font-light text-gray-700 hover:text-red-600 transition-colors"
+                  >
+                    <User size={16} className="mr-1" />
+                    <span>Staff</span>
+                  </Link>
+                )}
+
+              {/* Show login/register only if not authenticated */}
+              {!isAuthenticated && (
+                <>
+                  <Link
+                    to="/login"
+                    className="flex items-center text-sm font-light text-gray-700 hover:text-red-600 transition-colors"
+                  >
+                    <LogIn size={16} className="mr-1" />
+                    <span>Login</span>
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="flex items-center text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-500 px-4 py-2 rounded-full hover:from-red-700 hover:to-red-600 transition-all shadow-md hover:shadow-lg"
+                  >
+                    <UserPlus size={16} className="mr-1" />
+                    <span>Register</span>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            className="md:hidden flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? (
+              <X size={20} className="text-gray-700" />
+            ) : (
+              <Menu size={20} className="text-gray-700" />
+            )}
+          </button>
+
+          {/* Action Icons */}
+          <div className="flex items-center space-x-4">
+            {/* Notifications Panel - Only show for authenticated users */}
+            {isAuthenticated && (
+              <div className="relative">
+                <NotificationsPanel />
+              </div>
+            )}
+
+            <Link
+              to="/cart"
+              className="relative flex items-center justify-center w-8 h-8 rounded-full text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <ShoppingCart size={18} />
+              {cart && cart.totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  {cart.totalItems}
+>>>>>>> c2e8d12 (multiple UI updates, duplicate notification display bug fixed)
                 </span>
               </Link>
 
@@ -158,8 +297,16 @@ const Navbar = () => {
             <div className="flex items-center space-x-4">
               {/* Search Button */}
               <button
+<<<<<<< HEAD
                 aria-label="Search"
                 className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-full transition-all duration-200"
+=======
+                aria-label="Account"
+                className="flex items-center justify-center"
+                onClick={() =>
+                  isAuthenticated && setIsProfileOpen(!isProfileOpen)
+                }
+>>>>>>> c2e8d12 (multiple UI updates, duplicate notification display bug fixed)
               >
                 <svg
                   className="w-5 h-5"
@@ -209,6 +356,7 @@ const Navbar = () => {
               {/* User Profile/Account Button */}
               <div className="relative">
                 {isAuthenticated ? (
+<<<<<<< HEAD
                   <button
                     aria-label="Account"
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -239,9 +387,28 @@ const Navbar = () => {
                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                       ></path>
                     </svg>
+=======
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-full bg-red-50 border border-red-200 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors">
+                      <span className="text-sm font-medium">
+                        {user?.fullName?.charAt(0) ||
+                          user?.email?.charAt(0) ||
+                          "U"}
+                      </span>
+                    </div>
+                    <ChevronDown size={14} className="ml-1 text-gray-500" />
+                  </div>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="flex items-center justify-center w-8 h-8 rounded-full text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <User size={18} />
+>>>>>>> c2e8d12 (multiple UI updates, duplicate notification display bug fixed)
                   </Link>
                 )}
 
+<<<<<<< HEAD
                 {/* Profile Dropdown */}
                 {isAuthenticated && isProfileOpen && (
                   <div className="absolute right-0 mt-3 w-52 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-dropdown">
@@ -276,6 +443,189 @@ const Navbar = () => {
                       </button>
                     </div>
                   </div>
+=======
+              {/* Profile Dropdown */}
+              {isAuthenticated && isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-10">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-900">
+                      {user?.fullName}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+                  <Link
+                    to="/profile"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                    onClick={() => setIsProfileOpen(false)}
+                  >
+                    <User size={16} className="mr-2 text-gray-400" />
+                    Your Profile
+                  </Link>
+                  {user?.role === "Admin" && (
+                    <Link
+                      to="/admin"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
+                      <ShieldCheck size={16} className="mr-2 text-gray-400" />
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  {(user?.role === "Staff" || user?.role === "Admin") && (
+                    <Link
+                      to="/staff"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
+                      <Users size={16} className="mr-2 text-gray-400" />
+                      Staff Dashboard
+                    </Link>
+                  )}
+                  <Link
+                    to="/my-orders"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                    onClick={() => setIsProfileOpen(false)}
+                  >
+                    <Package size={16} className="mr-2 text-gray-400" />
+                    My Orders
+                  </Link>
+                  <Link
+                    to="/settings"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                    onClick={() => setIsProfileOpen(false)}
+                  >
+                    <Settings size={16} className="mr-2 text-gray-400" />
+                    Settings
+                  </Link>
+                  <div className="border-t border-gray-100 mt-1"></div>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut size={16} className="mr-2" />
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-gray-100 bg-white">
+            <div className="px-2 py-3 space-y-1">
+              <Link
+                to="/"
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Home size={18} className="mr-3 text-gray-500" />
+                Home
+              </Link>
+              <Link
+                to="/books"
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Book size={18} className="mr-3 text-gray-500" />
+                Books
+              </Link>
+              <Link
+                to="/whitelist"
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Heart size={18} className="mr-3 text-gray-500" />
+                Wishlist
+              </Link>
+
+              {/* Admin link - only show if user is admin */}
+              {isAuthenticated && user?.role === "Admin" && (
+                <Link
+                  to="/admin"
+                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <ShieldCheck size={18} className="mr-3 text-gray-500" />
+                  Admin
+                </Link>
+              )}
+
+              {/* Staff link - only show if user is staff */}
+              {isAuthenticated &&
+                (user?.role === "Staff" || user?.role === "Admin") && (
+                  <Link
+                    to="/staff"
+                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Users size={18} className="mr-3 text-gray-500" />
+                    Staff
+                  </Link>
+                )}
+
+              <div className="border-t border-gray-100 pt-2 mt-2">
+                {/* Show login/register only if not authenticated */}
+                {!isAuthenticated ? (
+                  <>
+                    <Link
+                      to="/login"
+                      className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <LogIn size={18} className="mr-3 text-gray-500" />
+                      Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="flex items-center px-3 py-2 mt-1 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-500 rounded-lg hover:from-red-700 hover:to-red-600 transition-all"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <UserPlus size={18} className="mr-3" />
+                      Register
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <User size={18} className="mr-3 text-gray-500" />
+                      Profile
+                    </Link>
+                    <Link
+                      to="/my-orders"
+                      className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Package size={18} className="mr-3 text-gray-500" />
+                      My Orders
+                    </Link>
+                    <Link
+                      to="/settings"
+                      className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Settings size={18} className="mr-3 text-gray-500" />
+                      Settings
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex items-center w-full text-left px-3 py-2 mt-1 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <LogOut size={18} className="mr-3" />
+                      Logout
+                    </button>
+                  </>
+>>>>>>> c2e8d12 (multiple UI updates, duplicate notification display bug fixed)
                 )}
               </div>
 

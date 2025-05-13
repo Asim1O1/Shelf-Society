@@ -3,99 +3,76 @@ import * as signalR from "@microsoft/signalr";
 import useAuthStore from "../stores/useAuthStore";
 import useStaffStore from "../stores/useStaffStore";
 
-// Enable this for detailed connection logging
-const ENABLE_DETAILED_LOGS = true;
-
-// Helper log function
-const log = (message, ...args) => {
-  if (ENABLE_DETAILED_LOGS) {
-    console.log(`[SignalR ${new Date().toISOString()}] ${message}`, ...args);
-  }
-};
-
 // SignalR connection instance
 let connection = null;
+
+// Custom event emitter for notifications
+const notificationListeners = [];
+
+export const addNotificationListener = (listener) => {
+  notificationListeners.push(listener);
+  return () => {
+    const index = notificationListeners.indexOf(listener);
+    if (index > -1) {
+      notificationListeners.splice(index, 1);
+    }
+  };
+};
+
+const notifyListeners = (notification) => {
+  notificationListeners.forEach((listener) => listener(notification));
+};
 
 // Initialize the SignalR connection
 export const initializeSignalRConnection = async () => {
   // If already connected, don't reconnect
   if (connection && connection.state === signalR.HubConnectionState.Connected) {
-    log("Connection already established - no need to reconnect");
+    console.log("SignalR connection already established");
     return connection;
   }
 
   try {
     // Get auth token for connection
-    log("Getting authentication token...");
-    const { getToken, user } = useAuthStore.getState();
+    const { getToken } = useAuthStore.getState();
     const token = await getToken();
-    log("Got token, user role:", user?.role);
 
     // Create connection with authentication
-    log("Creating new SignalR connection...");
     connection = new signalR.HubConnectionBuilder()
       .withUrl("http://localhost:5009/orderhub", {
         accessTokenFactory: () => token,
       })
-      .configureLogging(signalR.LogLevel.Debug) // Enable detailed SignalR logs
       .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
       .build();
 
-    // Log connection state changes
-    connection.onclose((error) => {
-      log(
-        "Connection closed",
-        error ? `with error: ${error}` : "without errors"
-      );
-    });
-
-    connection.onreconnecting((error) => {
-      log("Attempting to reconnect...", error);
-    });
-
-    connection.onreconnected((connectionId) => {
-      log("Reconnected with ID:", connectionId);
-    });
-
     // Register event handlers
-    log("Registering event handlers...");
     registerEventHandlers(connection);
 
     // Start connection
-    log("Starting connection...");
     await connection.start();
-    log("Connection started successfully with ID:", connection.connectionId);
+    console.log("SignalR connected successfully");
 
     return connection;
   } catch (error) {
-    log("ERROR establishing connection:", error);
+    console.error("Error establishing SignalR connection:", error);
     throw error;
   }
 };
 
 // Register SignalR event handlers
 const registerEventHandlers = (connection) => {
-  log("Setting up 'OrderCompleted' handler");
-
   // Handle "OrderCompleted" notifications
   connection.on("OrderCompleted", (notification) => {
-    log("📣 ORDER COMPLETED notification received:", notification);
+    console.log("Order completed notification received:", notification);
 
-    // Forward to staff store for handling
+    // Forward to staff store for handling if user is staff
     const { user } = useAuthStore.getState();
     if (user?.role === "Staff" || user?.role === "Admin") {
-      log("User is staff/admin, forwarding to staff store");
       const { handleOrderCompletedNotification } = useStaffStore.getState();
       handleOrderCompletedNotification(notification);
     }
 
-    // For all users, trigger the global notification handler
-    if (window.handleBookOrderNotification) {
-      log("Calling global notification handler");
-      window.handleBookOrderNotification(notification);
-    } else {
-      log("WARNING: No global notification handler registered");
-    }
+    // Notify all listeners (including NotificationsPanel)
+    notifyListeners(notification);
   });
 
   // Add other event handlers as needed
@@ -105,21 +82,19 @@ const registerEventHandlers = (connection) => {
 export const stopSignalRConnection = async () => {
   if (connection) {
     try {
-      log("Stopping connection...");
       await connection.stop();
-      log("Connection stopped successfully");
+      console.log("SignalR connection stopped");
     } catch (error) {
-      log("ERROR stopping connection:", error);
+      console.error("Error stopping SignalR connection:", error);
     }
   }
 };
 
 // Check connection status
 export const isConnected = () => {
-  const status =
-    connection && connection.state === signalR.HubConnectionState.Connected;
-  log("Connection status check:", status ? "CONNECTED" : "DISCONNECTED");
-  return status;
+  return (
+    connection && connection.state === signalR.HubConnectionState.Connected
+  );
 };
 
 // Get the SignalR connection instance (useful for direct access)
@@ -131,39 +106,32 @@ export const getConnection = () => {
 export const reconnect = async () => {
   if (connection && connection.state !== signalR.HubConnectionState.Connected) {
     try {
-      log("Manually reconnecting...");
       await connection.start();
-      log("Manual reconnection successful");
+      console.log("SignalR reconnected successfully");
       return true;
     } catch (error) {
-      log("ERROR reconnecting:", error);
+      console.error("Error reconnecting SignalR:", error);
       return false;
     }
   }
   return isConnected();
 };
 
-// Start SignalR service (this is the main entry point used by components)
+// Start SignalR service for any authenticated user
 export const startSignalRService = async () => {
-  const { isAuthenticated, user } = useAuthStore.getState();
-  log(
-    "startSignalRService called, authenticated:",
-    isAuthenticated,
-    "user:",
-    user?.email
-  );
+  const { isAuthenticated } = useAuthStore.getState();
 
+  // Connect for any authenticated user
   if (isAuthenticated) {
     try {
+      console.log("Starting SignalR service for authenticated user");
       await initializeSignalRConnection();
       return true;
     } catch (error) {
-      log("Failed to start SignalR service:", error);
+      console.error("Failed to start SignalR service:", error);
       return false;
     }
   }
-
-  log("User not authenticated, not starting SignalR");
   return false;
 };
 
@@ -174,4 +142,5 @@ export default {
   getConnection,
   reconnect,
   startSignalRService,
+  addNotificationListener,
 };

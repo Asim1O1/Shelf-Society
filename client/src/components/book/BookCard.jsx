@@ -1,5 +1,5 @@
 // src/components/book/BookCard.jsx
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import { Heart, Star } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
@@ -16,22 +16,6 @@ const BookCard = ({ book, viewMode = "grid" }) => {
   const discountedPrice = hasDiscount
     ? (book.price - (book.price * book.discountPercentage) / 100).toFixed(2)
     : null;
-
-  const handleAddToCart = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!isAuthenticated) {
-      navigate("/login", { state: { from: `/books/${book.id}` } });
-      return;
-    }
-
-    setIsAddingToCart(true);
-    setTimeout(() => {
-      console.log("Add to cart:", book.id);
-      setIsAddingToCart(false);
-    }, 1000);
-  };
 
   const handleAddToWhitelist = (e) => {
     e.preventDefault();
@@ -113,30 +97,6 @@ const BookCard = ({ book, viewMode = "grid" }) => {
                     ${book.price.toFixed(2)}
                   </div>
                 )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart}
-                  className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={handleAddToWhitelist}
-                  className={`p-2 rounded-lg transition-colors ${
-                    isWishlisted
-                      ? "bg-red-100 text-red-600"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <Heart
-                    className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`}
-                  />
-                </button>
               </div>
             </div>
           </div>
@@ -238,19 +198,6 @@ const BookCard = ({ book, viewMode = "grid" }) => {
                 </span>
               )}
             </div>
-
-            <button
-              onClick={handleAddToCart}
-              disabled={isAddingToCart}
-              className="w-full bg-gray-900 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-            >
-              {isAddingToCart ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <ShoppingCart className="w-4 h-4" />
-              )}
-              <span>{isAddingToCart ? "Adding..." : "Add to Cart"}</span>
-            </button>
           </div>
         </div>
       </div>

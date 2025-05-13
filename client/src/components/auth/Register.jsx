@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
 import ToastUtility from "../../utils/ToastUtility";
@@ -94,11 +94,6 @@ const Register = () => {
         {/* Left Column - Registration Form */}
         <div className="w-full md:w-1/2 p-6 md:p-8">
           <div className="max-w-md mx-auto">
-            {/* Logo */}
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-red-600">Shelf Society</h2>
-            </div>
-
             <h1 className="text-4xl font-bold text-gray-800 ">
               Create Account
             </h1>
@@ -123,7 +118,6 @@ const Register = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent"
                 />
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label
@@ -158,7 +152,6 @@ const Register = () => {
                   />
                 </div>
               </div>
-
               <div>
                 <label
                   htmlFor="password"
@@ -244,7 +237,6 @@ const Register = () => {
                   </div>
                 )}
               </div>
-
               <div>
                 <label
                   htmlFor="confirmPassword"
@@ -318,30 +310,6 @@ const Register = () => {
                       : "Passwords do not match"}
                   </p>
                 )}
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  id="terms"
-                  type="checkbox"
-                  className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                />
-                <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
-                  I agree to the{" "}
-                  <a
-                    href="#"
-                    className="text-red-600 hover:text-red-800 transition-colors duration-200"
-                  >
-                    Terms of Service
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="#"
-                    className="text-red-600 hover:text-red-800 transition-colors duration-200"
-                  >
-                    Privacy Policy
-                  </a>
-                </label>
               </div>
 
               <button

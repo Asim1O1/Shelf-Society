@@ -1,5 +1,5 @@
 // src/components/common/AnnouncementBanner.jsx
-import { Bell, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosInstance";
 
@@ -72,10 +72,6 @@ const AnnouncementBanner = () => {
                 <ChevronLeft className="w-4 h-4" />
               </button>
             )}
-
-            <div className="hidden sm:flex items-center mr-3">
-              <Bell className="w-4 h-4" />
-            </div>
           </div>
 
           {/* Center - Content */}

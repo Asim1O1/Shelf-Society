@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
@@ -9,7 +7,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
 
   // Get auth store actions and state
@@ -65,11 +63,6 @@ const Login = () => {
         {/* Left Column - Login Form */}
         <div className="w-full md:w-1/2 p-6 md:p-8">
           <div className="max-w-md mx-auto">
-            {/* Logo */}
-            <div className="mb-10">
-              <h2 className="text-3xl font-bold text-red-600">Shelf Society</h2>
-            </div>
-
             <h1 className="text-2xl font-bold text-gray-800 mb-2">Sign in</h1>
             <p className="text-gray-600 mb-8">
               Welcome back! Please enter your details.
@@ -95,20 +88,6 @@ const Login = () => {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Password
-                  </label>
-                  <a
-                    href="#"
-                    className="text-sm text-red-600 hover:text-red-800 transition-colors duration-200"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
                 <div className="relative">
                   <input
                     id="password"
@@ -162,24 +141,6 @@ const Login = () => {
                       </svg>
                     )}
                   </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                  />
-                  <label
-                    htmlFor="remember-me"
-                    className="block ml-2 text-sm text-gray-700"
-                  >
-                    Remember for 30 days
-                  </label>
                 </div>
               </div>
 

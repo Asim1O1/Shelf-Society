@@ -243,8 +243,14 @@ function App() {
           {/* Staff Routes */}
           <Route path="/staff" element={<StaffLayout />}>
             <Route index element={<StaffDashboard />} />
+<<<<<<< HEAD
             <Route path="orders" element={<StaffOrdersList />} />
             <Route path="orders/:id" element={<StaffOrderDetails />} />
+=======
+            <Route path="orders" element={<StaffOrdersList />} />{" "}
+            {/* Added Orders List page */}
+            <Route path="orders/:id" element={<StaffOrderDetails />} />{" "}
+>>>>>>> c2e8d12 (multiple UI updates, duplicate notification display bug fixed)
           </Route>
 
           {/* Role-Based Redirection Route */}
