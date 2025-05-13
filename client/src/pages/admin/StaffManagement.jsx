@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import AdminSidebar from "../../components/admin/AdminSidebar";
 import useStaffManagementStore from "../../stores/useStaffManagementStore";
 
 const StaffManagement = () => {
@@ -50,11 +51,15 @@ const StaffManagement = () => {
   const totalPages = Math.ceil(pagination.totalCount / pagination.pageSize);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <AdminSidebar />
+
+      <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Staff Management
+            </h1>
             <p className="text-gray-600">Manage your staff members</p>
           </div>
           <Link
@@ -85,8 +90,12 @@ const StaffManagement = () => {
                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
               />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No staff members</h3>
-            <p className="mt-1 text-sm text-gray-500">Get started by adding a new staff member.</p>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              No staff members
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Get started by adding a new staff member.
+            </p>
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
@@ -109,7 +118,10 @@ const StaffManagement = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {staffMembers.map((staffMember) => (
-                  <tr key={staffMember.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={staffMember.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm">

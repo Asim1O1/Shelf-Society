@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
+import AdminSidebar from "../../components/admin/AdminSidebar";
 import axiosInstance from "../../utils/axiosInstance";
 
 const AnnouncementManagement = () => {
@@ -83,8 +84,10 @@ const AnnouncementManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <AdminSidebar />
+
+      <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
