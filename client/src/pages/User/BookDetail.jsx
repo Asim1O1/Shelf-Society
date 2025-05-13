@@ -13,18 +13,18 @@ import useWhitelist from "../../stores/useWhitelist";
 import axiosInstance from "../../utils/axiosInstance";
 
 import {
+  BookOpen,
   ChevronLeft,
   ChevronRight,
   Clock,
   Heart,
   Shield,
   ShoppingCart,
-  Truck,
-  BookOpen,
   Star,
+  Truck,
 } from "lucide-react";
-import ConfirmDeleteModal from "../../components/Reviews/ConfirmDeleteModal";
 import ReviewForm from "../../components/Reviews/ReviewForm";
+import ToastUtility from "../../utils/ToastUtility";
 
 // Generic Confirmation Modal Component
 const ConfirmationModal = ({
@@ -185,11 +185,11 @@ const BookDetailPage = () => {
     setActionLoading(true);
     try {
       const result = await addToCart(book.id, quantity);
+      console.log("thE RESULT IS", result);
       if (result) {
-        toast.success(`Added ${quantity} copy(s) of "${book.title}" to cart`);
-        setAddToCartModal({ isOpen: false });
-      } else {
-        toast.error("Failed to add book to cart");
+        ToastUtility.success(
+          `Added ${quantity} copy(s) of "${book.title}" to cart`
+        );
       }
     } catch (err) {
       console.error("Error adding to cart:", err);

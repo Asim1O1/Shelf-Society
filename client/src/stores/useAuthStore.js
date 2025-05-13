@@ -1,8 +1,19 @@
 // src/stores/useAuthStore.js
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import axiosInstance, { setRefreshTokenFunction } from "../utils/axiosInstance";
+
+// Helper to check token expiration
+function isTokenExpired(token) {
+  try {
+    const decoded = jwtDecode(token);
+    return decoded.exp * 1000 < Date.now(); // true if expired
+  } catch (err) {
+    return true; // consider invalid token as expired
+  }
+}
 
 const useAuthStore = create(
   persist(
@@ -16,11 +27,44 @@ const useAuthStore = create(
       error: null,
 
       // Initialize the store
-      init: () => {
-        setRefreshTokenFunction(get().refreshAccessToken);
+      init: async () => {
+        setRefreshTokenFunction(get().refreshAccessToken); // required for axios interceptor
+
+        const accessToken = localStorage.getItem("accessToken");
+
+        if (!accessToken || isTokenExpired(accessToken)) {
+          console.log(
+            "Access token missing or expired. Attempting to refresh..."
+          );
+          const success = await get().refreshAccessToken();
+          if (!success) {
+            console.log("Token refresh failed. Logging out.");
+            get().logout();
+          } else {
+            console.log("Token refreshed successfully.");
+            set({ isAuthenticated: true });
+          }
+        } else {
+          // Access token is valid, decode and set user
+          try {
+            const decoded = jwtDecode(accessToken);
+            set({
+              user: {
+                email: decoded.email,
+                fullName: decoded.fullName,
+                role: decoded.role,
+                userId: decoded.userId,
+              },
+              isAuthenticated: true,
+            });
+          } catch (e) {
+            console.log("Invalid token decoding failed. Logging out.");
+            get().logout();
+          }
+        }
       },
 
-      // Register action
+      // Register
       register: async (userData) => {
         console.log("Registering user with data:", userData);
         set({ isLoading: true, error: null });
@@ -49,7 +93,7 @@ const useAuthStore = create(
         }
       },
 
-      // Login action
+      // Login
       login: async (credentials) => {
         set({ isLoading: true, error: null });
         try {
@@ -61,7 +105,6 @@ const useAuthStore = create(
           if (response.data.success) {
             const { data } = response.data;
 
-            // Store tokens
             localStorage.setItem("accessToken", data.accessToken);
             localStorage.setItem("refreshToken", data.refreshToken);
 
@@ -90,7 +133,7 @@ const useAuthStore = create(
         }
       },
 
-      // Refresh token action
+      // Refresh Token
       refreshAccessToken: async () => {
         try {
           const refreshToken = localStorage.getItem("refreshToken");
@@ -107,7 +150,6 @@ const useAuthStore = create(
           if (response.data.success) {
             const { data } = response.data;
 
-            // Update tokens
             localStorage.setItem("accessToken", data.accessToken);
             localStorage.setItem("refreshToken", data.refreshToken);
 
@@ -134,7 +176,7 @@ const useAuthStore = create(
         }
       },
 
-      // Logout action
+      // Logout
       logout: () => {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
@@ -147,17 +189,16 @@ const useAuthStore = create(
         });
       },
 
-      // Clear any error
+      // Clear error
       clearError: () => set({ error: null }),
 
-      // Get token function (moved inside the state object)
+      // Get token
       getToken: () => {
-        return get().token; // Returns the access token from the store
+        return get().token;
       },
     }),
     {
-      name: "auth-storage", // unique name for localStorage
-      // Only persist these fields
+      name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
         token: state.token,
@@ -168,13 +209,12 @@ const useAuthStore = create(
   )
 );
 
-// Initialize the refresh token function when the module loads
+// Initialize store on module load
 const initAuth = () => {
   const authStore = useAuthStore.getState();
   authStore.init();
 };
 
-// Run the initialization
 initAuth();
 
 export default useAuthStore;

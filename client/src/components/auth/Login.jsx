@@ -34,11 +34,6 @@ const Login = () => {
 
       if (result.success) {
         ToastUtility.success("Successfully logged in!");
-
-        // Navigate after a short delay to let the user see the success message
-        setTimeout(() => {
-          navigate("/");
-        }, 1500);
       } else {
         ToastUtility.error(result.message);
       }

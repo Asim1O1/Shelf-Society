@@ -46,7 +46,7 @@ namespace Shelf_Society.Services
 
         foreach (var item in order.Items)
         {
-          Console.WriteLine($"- {item.Title ?? "Unknown Book"} x{item.Quantity} @ ${item.Price:F2} = ${item.Subtotal:F2}");
+
         }
 
         Console.WriteLine("======================================");
@@ -114,9 +114,7 @@ namespace Shelf_Society.Services
       foreach (var item in order.Items)
       {
         sb.AppendLine("<tr>");
-        sb.AppendLine($"<td style='padding: 8px; text-align: left; border: 1px solid #ddd;'>{item.Title ?? "Unknown Book"}</td>");
-        sb.AppendLine($"<td style='padding: 8px; text-align: left; border: 1px solid #ddd;'>{item.Quantity}</td>");
-        sb.AppendLine($"<td style='padding: 8px; text-align: right; border: 1px solid #ddd;'>${item.Price:F2}</td>");
+
         sb.AppendLine($"<td style='padding: 8px; text-align: right; border: 1px solid #ddd;'>${item.Subtotal:F2}</td>");
         sb.AppendLine("</tr>");
       }
