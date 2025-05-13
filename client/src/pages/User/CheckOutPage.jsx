@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AnnouncementBanner from "../../components/common/AnnouncementBanner";
 import Navbar from "../../components/common/NavBar";
+import Footer from "../../components/common/Footer";
 import useAuthStore from "../../stores/useAuthStore";
 import useCartStore from "../../stores/useCartStore";
 import useOrderStore from "../../stores/useOrderStore";
@@ -97,6 +98,7 @@ const CheckoutPage = () => {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       <AnnouncementBanner />
       <Navbar />
@@ -235,6 +237,7 @@ const CheckoutPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

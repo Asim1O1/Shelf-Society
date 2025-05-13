@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AnnouncementBanner from "../../components/common/AnnouncementBanner";
 import Navbar from "../../components/common/NavBar";
+import Footer from "../../components/common/Footer";
 import useAuthStore from "../../stores/useAuthStore";
 import useOrderStore from "../../stores/useOrderStore";
 
@@ -87,6 +88,7 @@ const OrderConfirmationPage = () => {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       <AnnouncementBanner />
       <Navbar />
@@ -345,6 +347,8 @@ const OrderConfirmationPage = () => {
         </div>
       )}
     </div>
+      <Footer />
+    </>
   );
 };
 

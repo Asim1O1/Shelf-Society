@@ -26,6 +26,45 @@ import {
 import ConfirmDeleteModal from "../../components/Reviews/ConfirmDeleteModal";
 import ReviewForm from "../../components/Reviews/ReviewForm";
 
+// Generic Confirmation Modal Component
+const ConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText = "Confirm",
+  confirmClass = "bg-red-600 hover:bg-red-700",
+  isLoading = false,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+        <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
+        <p className="text-gray-600 mb-6">{message}</p>
+        <div className="flex space-x-3 justify-end">
+          <button
+            onClick={onClose}
+            disabled={isLoading}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium rounded-lg border border-gray-300 hover:border-gray-400 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className={`px-4 py-2 text-white font-medium rounded-lg transition-colors disabled:opacity-50 ${confirmClass}`}
+          >
+            {isLoading ? "Processing..." : confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const BookDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -60,6 +99,18 @@ const BookDetailPage = () => {
   });
   const [reviewsToShow, setReviewsToShow] = useState(2);
 
+  // Confirmation Modals State
+  const [addToCartModal, setAddToCartModal] = useState({ isOpen: false });
+  const [wishlistModal, setWishlistModal] = useState({
+    isOpen: false,
+    action: null, // 'add' or 'remove'
+  });
+  const [reviewDeleteModal, setReviewDeleteModal] = useState({
+    isOpen: false,
+    reviewId: null,
+  });
+  const [actionLoading, setActionLoading] = useState(false);
+
   useEffect(() => {
     fetchBookDetails();
     getBookReviews(id);
@@ -68,8 +119,12 @@ const BookDetailPage = () => {
   useEffect(() => {
     const checkWhitelistStatus = async () => {
       if (isAuthenticated && book) {
-        const isBookmarked = await checkBookInWhitelist(book.id);
-        setIsInWhitelist(isBookmarked);
+        try {
+          const isBookmarked = await checkBookInWhitelist(book.id);
+          setIsInWhitelist(isBookmarked);
+        } catch (err) {
+          console.error("Error checking whitelist status:", err);
+        }
       }
     };
     checkWhitelistStatus();
@@ -83,10 +138,12 @@ const BookDetailPage = () => {
         setBook(response.data.data);
         setCurrentImageIndex(0);
         fetchRelatedBooks(response.data.data);
+        toast.success("Book details loaded successfully");
       }
     } catch (err) {
       console.error("Error fetching book details:", err);
       setError("Failed to load book details. Please try again later.");
+      toast.error("Failed to load book details");
     } finally {
       setIsLoading(false);
     }
@@ -105,6 +162,7 @@ const BookDetailPage = () => {
       }
     } catch (err) {
       console.error("Error fetching related books:", err);
+      toast.error("Failed to load related books");
     }
   };
 
@@ -115,29 +173,45 @@ const BookDetailPage = () => {
     }
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCartClick = () => {
     if (!isAuthenticated) {
       navigate("/login", { state: { from: `/books/${id}` } });
       return;
     }
+    setAddToCartModal({ isOpen: true });
+  };
 
+  const confirmAddToCart = async () => {
+    setActionLoading(true);
     try {
       const result = await addToCart(book.id, quantity);
       if (result) {
         toast.success(`Added ${quantity} copy(s) of "${book.title}" to cart`);
+        setAddToCartModal({ isOpen: false });
+      } else {
+        toast.error("Failed to add book to cart");
       }
     } catch (err) {
       console.error("Error adding to cart:", err);
-      toast.error("Failed to add book to cart");
+      toast.error(err.message || "Failed to add book to cart");
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleToggleWhitelist = async () => {
+  const handleToggleWhitelistClick = () => {
     if (!isAuthenticated) {
       navigate("/login", { state: { from: `/books/${id}` } });
       return;
     }
+    setWishlistModal({
+      isOpen: true,
+      action: isInWhitelist ? "remove" : "add",
+    });
+  };
 
+  const confirmToggleWhitelist = async () => {
+    setActionLoading(true);
     try {
       if (isInWhitelist) {
         const whitelistData = await getWhitelistItemId(book.id);
@@ -151,9 +225,12 @@ const BookDetailPage = () => {
         setIsInWhitelist(true);
         toast.success("Added to wishlist");
       }
+      setWishlistModal({ isOpen: false, action: null });
     } catch (err) {
-      console.error("Error updating whitelist:", err);
-      toast.error("Failed to update wishlist");
+      console.error("Error updating wishlist:", err);
+      toast.error(err.message || "Failed to update wishlist");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -169,7 +246,7 @@ const BookDetailPage = () => {
       return null;
     } catch (err) {
       console.error("Error fetching whitelist:", err);
-      return null;
+      throw new Error("Failed to fetch wishlist data");
     }
   };
 
@@ -219,21 +296,28 @@ const BookDetailPage = () => {
   };
 
   const handleSubmitReview = async (reviewData) => {
-    let result;
-    if (editingReview) {
-      result = await updateReview(editingReview.id, reviewData);
-    } else {
-      result = await createReview(reviewData);
-    }
+    try {
+      let result;
+      if (editingReview) {
+        result = await updateReview(editingReview.id, reviewData);
+      } else {
+        result = await createReview(reviewData);
+      }
 
-    if (result.success) {
-      setShowReviewForm(false);
-      setEditingReview(null);
-      toast.success(
-        editingReview
-          ? "Review updated successfully"
-          : "Review submitted successfully"
-      );
+      if (result.success) {
+        setShowReviewForm(false);
+        setEditingReview(null);
+        toast.success(
+          editingReview
+            ? "Review updated successfully"
+            : "Review submitted successfully"
+        );
+      } else {
+        toast.error("Failed to submit review");
+      }
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      toast.error(err.message || "Failed to submit review");
     }
   };
 
@@ -243,15 +327,23 @@ const BookDetailPage = () => {
   };
 
   const handleDeleteClick = (reviewId) => {
-    setDeleteModal({ isOpen: true, reviewId });
+    setReviewDeleteModal({ isOpen: true, reviewId });
   };
 
   const confirmDeleteReview = async () => {
-    const result = await deleteReview(deleteModal.reviewId);
-    if (result.success) {
-      toast.success("Review deleted successfully");
+    try {
+      const result = await deleteReview(reviewDeleteModal.reviewId);
+      if (result.success) {
+        toast.success("Review deleted successfully");
+      } else {
+        toast.error("Failed to delete review");
+      }
+    } catch (err) {
+      console.error("Error deleting review:", err);
+      toast.error(err.message || "Failed to delete review");
+    } finally {
+      setReviewDeleteModal({ isOpen: false, reviewId: null });
     }
-    setDeleteModal({ isOpen: false, reviewId: null });
   };
 
   const hasUserReviewed = bookReviews?.reviews?.some(
@@ -531,7 +623,7 @@ const BookDetailPage = () => {
 
                     <div className="flex gap-3">
                       <button
-                        onClick={handleAddToCart}
+                        onClick={handleAddToCartClick}
                         disabled={book.stockQuantity <= 0}
                         className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
                           book.stockQuantity > 0
@@ -546,7 +638,7 @@ const BookDetailPage = () => {
                       </button>
 
                       <button
-                        onClick={handleToggleWhitelist}
+                        onClick={handleToggleWhitelistClick}
                         className={`px-6 py-3 rounded-lg font-semibold transition-all ${
                           isInWhitelist
                             ? "bg-red-100 text-red-700 hover:bg-red-200"
@@ -943,11 +1035,51 @@ const BookDetailPage = () => {
         )}
       </div>
 
+      {/* Add to Cart Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={addToCartModal.isOpen}
+        onClose={() => setAddToCartModal({ isOpen: false })}
+        onConfirm={confirmAddToCart}
+        title="Add to Cart"
+        message={`Are you sure you want to add ${quantity} copy(s) of "${book.title}" to your cart?`}
+        confirmText="Add to Cart"
+        confirmClass="bg-red-600 hover:bg-red-700"
+        isLoading={actionLoading}
+      />
+
+      {/* Wishlist Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={wishlistModal.isOpen}
+        onClose={() => setWishlistModal({ isOpen: false, action: null })}
+        onConfirm={confirmToggleWhitelist}
+        title={
+          wishlistModal.action === "add"
+            ? "Add to Wishlist"
+            : "Remove from Wishlist"
+        }
+        message={
+          wishlistModal.action === "add"
+            ? `Add "${book.title}" to your wishlist?`
+            : `Remove "${book.title}" from your wishlist?`
+        }
+        confirmText={
+          wishlistModal.action === "add"
+            ? "Add to Wishlist"
+            : "Remove from Wishlist"
+        }
+        confirmClass="bg-red-600 hover:bg-red-700"
+        isLoading={actionLoading}
+      />
+
       {/* Delete Review Confirmation Modal */}
-      <ConfirmDeleteModal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, reviewId: null })}
+      <ConfirmationModal
+        isOpen={reviewDeleteModal.isOpen}
+        onClose={() => setReviewDeleteModal({ isOpen: false, reviewId: null })}
         onConfirm={confirmDeleteReview}
+        title="Delete Review"
+        message="Are you sure you want to delete this review? This action cannot be undone."
+        confirmText="Delete Review"
+        confirmClass="bg-red-600 hover:bg-red-700"
         isLoading={reviewsLoading}
       />
     </div>

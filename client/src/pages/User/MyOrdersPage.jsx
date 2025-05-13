@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AnnouncementBanner from "../../components/common/AnnouncementBanner";
 import Navbar from "../../components/common/NavBar";
+import Footer from "../../components/common/Footer";
 import useAuthStore from "../../stores/useAuthStore";
 import useOrderStore from "../../stores/useOrderStore";
 
@@ -114,6 +115,7 @@ const MyOrdersPage = () => {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       <AnnouncementBanner />
       <Navbar />
@@ -521,6 +523,8 @@ const MyOrdersPage = () => {
         </div>
       )}
     </div>
+    <Footer />
+    </>
   );
 };
 
