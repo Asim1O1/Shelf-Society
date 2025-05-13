@@ -9,5 +9,7 @@ public class UpdateStaffDTO
   public string? LastName { get; set; }
   public string? Password { get; set; }
   public string? ConfirmPassword { get; set; }
+  public string? Role { get; set; }
+  public bool? IsActive { get; set; }
 
 }

@@ -28,6 +28,8 @@ namespace Shelf_Society.Models.Entities
 
     public string Role { get; set; } = "Member"; // Member, Staff, Admin,
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? LastLoginAt { get; set; }
+    public bool IsActive { get; set; } = true;
 
     // Add Refresh Token and its expiration properties
     public string? RefreshToken { get; set; }  // Store the refresh token
