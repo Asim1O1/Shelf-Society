@@ -12,5 +12,6 @@ public class WhitelistResponseDTO
   public string ImageUrl { get; set; }
   public bool IsAvailable { get; set; }
   public DateTime AddedAt { get; set; }
-
+  public int StockQuantity { get; set; }
+  public string Genre { get; set; }
 }
