@@ -1,91 +1,44 @@
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
-// Custom toast styles to match the red theme
-const customToastStyles = {
-  success: {
-    style: {
-      background: "#f8f9fa",
-      color: "#333",
-      borderLeft: "4px solid #ef4444",
-      borderRadius: "4px",
-      boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-    },
-    progressStyle: {
-      background: "#ef4444",
-    },
-    icon: "✓",
-  },
-  error: {
-    style: {
-      background: "#f8f9fa",
-      color: "#333",
-      borderLeft: "4px solid #ef4444",
-      borderRadius: "4px",
-      boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-    },
-    progressStyle: {
-      background: "#ef4444",
-    },
-    icon: "✗",
-  },
-  info: {
-    style: {
-      background: "#f8f9fa",
-      color: "#333",
-      borderLeft: "4px solid #ef4444",
-      borderRadius: "4px",
-      boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-    },
-    progressStyle: {
-      background: "#ef4444",
-    },
-    icon: "ℹ",
-  },
-  warning: {
-    style: {
-      background: "#f8f9fa",
-      color: "#333",
-      borderLeft: "4px solid #ef4444",
-      borderRadius: "4px",
-      boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-    },
-    progressStyle: {
-      background: "#ef4444",
-    },
-    icon: "⚠",
-  },
-};
-
-// Helper functions to show different types of notifications
-const showToast = {
+// Toast utility functions as a simple object to be imported
+const ToastUtility = {
   success: (message) => {
-    toast.success(message, {
-      style: customToastStyles.success.style,
-      progressStyle: customToastStyles.success.progressStyle,
-      icon: customToastStyles.success.icon,
-    });
+    toast.success(message);
   },
   error: (message) => {
-    toast.error(message, {
-      style: customToastStyles.error.style,
-      progressStyle: customToastStyles.error.progressStyle,
-      icon: customToastStyles.error.icon,
-    });
+    toast.error(message);
   },
   info: (message) => {
-    toast.info(message, {
-      style: customToastStyles.info.style,
-      progressStyle: customToastStyles.info.progressStyle,
-      icon: customToastStyles.info.icon,
-    });
+    toast.info(message);
   },
   warning: (message) => {
-    toast.warning(message, {
-      style: customToastStyles.warning.style,
-      progressStyle: customToastStyles.warning.progressStyle,
-      icon: customToastStyles.warning.icon,
+    toast.warning(message);
+  },
+  promise: (promise, messages) => {
+    return toast.promise(promise, {
+      loading: messages.loading,
+      success: messages.success,
+      error: messages.error,
     });
   },
 };
 
-export default showToast;
+// Export as default for usage like: import ToastUtility from "../utils/ToastUtility";
+export default ToastUtility;
+
+// Also export a hook for components that prefer the hook pattern
+export const useToast = () => {
+  return {
+    success: (message) => toast.success(message),
+    error: (message) => toast.error(message),
+    info: (message) => toast.info(message),
+    warning: (message) => toast.warning(message),
+    promise: (promise, messages) =>
+      toast.promise(promise, {
+        loading: messages.loading,
+        success: messages.success,
+        error: messages.error,
+      }),
+  };
+};
+
