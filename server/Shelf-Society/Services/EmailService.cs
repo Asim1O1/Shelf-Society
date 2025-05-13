@@ -27,12 +27,38 @@ namespace Shelf_Society.Services
     {
       try
       {
+        // Log order details
+        Console.WriteLine("============= ORDER DETAILS =============");
+        Console.WriteLine($"Order ID: {order.Id}");
+        Console.WriteLine($"Order Date: {order.OrderDate}");
+        Console.WriteLine($"Claim Code: {order.ClaimCode}");
+        Console.WriteLine($"Customer: {user.FirstName} {user.LastName} ({user.Email})");
+        Console.WriteLine($"Total Items: {order.Items.Count}");
+        Console.WriteLine($"Subtotal: ${order.TotalAmount:F2}");
+
+        if (order.DiscountPercentage > 0)
+        {
+          Console.WriteLine($"Discount: {order.DiscountPercentage}% (-${order.DiscountAmount:F2})");
+        }
+
+        Console.WriteLine($"Final Amount: ${order.FinalAmount:F2}");
+        Console.WriteLine("--------- Order Items ---------");
+
+        foreach (var item in order.Items)
+        {
+          Console.WriteLine($"- {item.Title ?? "Unknown Book"} x{item.Quantity} @ ${item.Price:F2} = ${item.Subtotal:F2}");
+        }
+
+        Console.WriteLine("======================================");
+
         var smtpServer = _configuration["EmailSettings:SmtpServer"];
         var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
         var smtpUsername = _configuration["EmailSettings:Username"];
         var smtpPassword = _configuration["EmailSettings:Password"];
         var senderEmail = _configuration["EmailSettings:SenderEmail"];
         var senderName = _configuration["EmailSettings:SenderName"];
+
+        Console.WriteLine($"Sending email via {smtpServer}:{smtpPort} from {senderEmail}");
 
         var client = new SmtpClient(smtpServer)
         {
@@ -51,12 +77,15 @@ namespace Shelf_Society.Services
 
         mailMessage.To.Add(user.Email);
 
+        Console.WriteLine($"Sending order confirmation email to {user.Email}...");
         await client.SendMailAsync(mailMessage);
+        Console.WriteLine("Email sent successfully!");
       }
       catch (Exception ex)
       {
         // Log the error but don't throw - we don't want the order to fail if email fails
-        Console.WriteLine($"Failed to send email: {ex.Message}");
+        Console.WriteLine($"ERROR: Failed to send email: {ex.Message}");
+        Console.WriteLine($"Exception details: {ex}");
       }
     }
 
@@ -85,7 +114,7 @@ namespace Shelf_Society.Services
       foreach (var item in order.Items)
       {
         sb.AppendLine("<tr>");
-        sb.AppendLine($"<td style='padding: 8px; text-align: left; border: 1px solid #ddd;'>{item.Book.Title}</td>");
+        sb.AppendLine($"<td style='padding: 8px; text-align: left; border: 1px solid #ddd;'>{item.Title ?? "Unknown Book"}</td>");
         sb.AppendLine($"<td style='padding: 8px; text-align: left; border: 1px solid #ddd;'>{item.Quantity}</td>");
         sb.AppendLine($"<td style='padding: 8px; text-align: right; border: 1px solid #ddd;'>${item.Price:F2}</td>");
         sb.AppendLine($"<td style='padding: 8px; text-align: right; border: 1px solid #ddd;'>${item.Subtotal:F2}</td>");
