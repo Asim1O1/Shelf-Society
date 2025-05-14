@@ -10,11 +10,13 @@ public class BookResponseDTO
   public string ISBN { get; set; } = null!;
   public string Description { get; set; } = null!;
   public decimal Price { get; set; }
+  public double Rating { get; set; }
+  public int ReviewCount { get; set; }
   public string Format { get; set; }
   public string Genre { get; set; }
   public string Language { get; set; }
   public int StockQuantity { get; set; }
-  public double Rating { get; set; }
+
   public DateTime PublicationDate { get; set; }
   public string Publisher { get; set; }
   public DateTime CreatedAt { get; set; }

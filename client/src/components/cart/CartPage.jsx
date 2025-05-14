@@ -1,11 +1,11 @@
 // src/pages/CartPage.jsx
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
 import useCartStore from "../../stores/useCartStore";
 import AnnouncementBanner from "../common/AnnouncementBanner";
-import Navbar from "../common/NavBar";
 import Footer from "../common/Footer";
+import Navbar from "../common/NavBar";
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -19,6 +19,8 @@ const CartPage = () => {
     removeFromCart,
     clearCart,
   } = useCartStore();
+
+  const [showClearCartModal, setShowClearCartModal] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -42,13 +44,81 @@ const CartPage = () => {
   };
 
   const handleClearCart = async () => {
-    if (window.confirm("Are you sure you want to clear your cart?")) {
-      await clearCart();
-    }
+    await clearCart();
+    setShowClearCartModal(false);
   };
 
   const handleCheckout = () => {
     navigate("/checkout");
+  };
+
+  // Clear Cart Modal Component
+  const ClearCartModal = () => {
+    if (!showClearCartModal) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        {/* Backdrop */}
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+          onClick={() => setShowClearCartModal(false)}
+        ></div>
+
+        {/* Modal */}
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all animate-scale-in">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-red-500 to-red-600 p-6">
+              <h3 className="text-2xl font-bold text-white">Clear Cart</h3>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="mb-6 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                  <svg
+                    className="h-8 w-8 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <p className="text-lg text-gray-700">
+                  Are you sure you want to clear your cart?
+                </p>
+                <p className="mt-2 text-sm text-gray-500">
+                  This action will remove all {cart.totalItems} items from your
+                  cart
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowClearCartModal(false)}
+                  className="flex-1 rounded-full border-2 border-gray-200 bg-white px-6 py-3 text-gray-700 font-medium transition-all duration-200 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleClearCart}
+                  className="flex-1 rounded-full bg-gradient-to-r from-red-500 to-red-600 px-6 py-3 text-white font-medium transition-all duration-200 hover:from-red-600 hover:to-red-700 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-200"
+                >
+                  Clear Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -172,7 +242,7 @@ const CartPage = () => {
                       Items ({cart.totalItems})
                     </h2>
                     <button
-                      onClick={handleClearCart}
+                      onClick={() => setShowClearCartModal(true)}
                       className="text-sm text-red-600 hover:text-red-800 font-medium transition-colors duration-200 hover:underline"
                     >
                       Clear Cart
@@ -384,6 +454,9 @@ const CartPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Clear Cart Modal */}
+        <ClearCartModal />
       </div>
       <Footer />
     </>

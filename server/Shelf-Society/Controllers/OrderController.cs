@@ -263,8 +263,9 @@ namespace Shelf_Society.Controllers
       });
     }
 
-    // Place a new order from cart
+
     [HttpPost]
+
     public async Task<ActionResult<ResponseHelper<OrderResponseDTO>>> PlaceOrder(PlaceOrderDTO dto)
     {
       try
@@ -348,22 +349,8 @@ namespace Shelf_Society.Controllers
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
 
-        // Send email
-        try
-        {
-          var user = await _context.Users.FindAsync(userId);
-          if (user != null)
-          {
-            await _emailService.SendOrderConfirmationEmailAsync(order, user);
-          }
-        }
-        catch (Exception emailEx)
-        {
-          // Log email sending failure, don't interrupt the order placement
-          Console.WriteLine($"Failed to send confirmation email: {emailEx.Message}");
-        }
-
         // Create order items and update stock
+        var orderItems = new List<OrderItem>();
         foreach (var cartItem in cartItems)
         {
           var orderItem = new OrderItem
@@ -376,8 +363,38 @@ namespace Shelf_Society.Controllers
             CreatedAt = DateTime.UtcNow
           };
 
+          orderItems.Add(orderItem);
           _context.OrderItems.Add(orderItem);
           cartItem.Book.StockQuantity -= cartItem.Quantity;
+        }
+
+        // Send email with order items details
+        try
+        {
+          var user = await _context.Users.FindAsync(userId);
+          if (user != null)
+          {
+            // Create a list of order item details for the email
+            var orderItemDetails = cartItems.Select(ci => new OrderItemDetailDTO
+            {
+              Title = ci.Book.Title,
+              Quantity = ci.Quantity,
+              Price = ci.Book.Price,
+              Subtotal = ci.Book.Price * ci.Quantity
+            }).ToList();
+            foreach (var item in orderItemDetails)
+            {
+              Console.WriteLine($"[DTO] Title: {item.Title}, Quantity: {item.Quantity}, Price: {item.Price}, Subtotal: {item.Subtotal}");
+            }
+
+
+            await _emailService.SendOrderConfirmationEmailAsync(order, user, orderItemDetails);
+          }
+        }
+        catch (Exception emailEx)
+        {
+          // Log email sending failure, don't interrupt the order placement
+          Console.WriteLine($"Failed to send confirmation email: {emailEx.Message}");
         }
 
         // Clear cart
@@ -400,7 +417,6 @@ namespace Shelf_Society.Controllers
         });
       }
     }
-
 
     // Cancel an order
     [HttpPost("{id}/cancel")]

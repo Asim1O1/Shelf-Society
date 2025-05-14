@@ -1,7 +1,6 @@
 // src/pages/BookDetailPage.jsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 
 import AnnouncementBanner from "../../components/common/AnnouncementBanner";
 import Navbar from "../../components/common/NavBar";
@@ -76,6 +75,7 @@ const BookDetailPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [relatedBooks, setRelatedBooks] = useState([]);
   const [activeTab, setActiveTab] = useState("description");
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const { checkBookInWhitelist, addToWhitelist, removeFromWhitelist } =
     useWhitelist();
@@ -100,7 +100,6 @@ const BookDetailPage = () => {
   const [reviewsToShow, setReviewsToShow] = useState(2);
 
   // Confirmation Modals State
-  const [addToCartModal, setAddToCartModal] = useState({ isOpen: false });
   const [wishlistModal, setWishlistModal] = useState({
     isOpen: false,
     action: null, // 'add' or 'remove'
@@ -138,12 +137,12 @@ const BookDetailPage = () => {
         setBook(response.data.data);
         setCurrentImageIndex(0);
         fetchRelatedBooks(response.data.data);
-        toast.success("Book details loaded successfully");
+        ToastUtility.success("Book details loaded successfully");
       }
     } catch (err) {
       console.error("Error fetching book details:", err);
       setError("Failed to load book details. Please try again later.");
-      toast.error("Failed to load book details");
+      ToastUtility.error("Failed to load book details");
     } finally {
       setIsLoading(false);
     }
@@ -162,7 +161,7 @@ const BookDetailPage = () => {
       }
     } catch (err) {
       console.error("Error fetching related books:", err);
-      toast.error("Failed to load related books");
+      ToastUtility.error("Failed to load related books");
     }
   };
 
@@ -173,16 +172,13 @@ const BookDetailPage = () => {
     }
   };
 
-  const handleAddToCartClick = () => {
+  const handleAddToCart = async () => {
     if (!isAuthenticated) {
       navigate("/login", { state: { from: `/books/${id}` } });
       return;
     }
-    setAddToCartModal({ isOpen: true });
-  };
 
-  const confirmAddToCart = async () => {
-    setActionLoading(true);
+    setIsAddingToCart(true);
     try {
       const result = await addToCart(book.id, quantity);
       console.log("thE RESULT IS", result);
@@ -193,9 +189,9 @@ const BookDetailPage = () => {
       }
     } catch (err) {
       console.error("Error adding to cart:", err);
-      toast.error(err.message || "Failed to add book to cart");
+      ToastUtility.error(err.message || "Failed to add book to cart");
     } finally {
-      setActionLoading(false);
+      setIsAddingToCart(false);
     }
   };
 
@@ -218,17 +214,17 @@ const BookDetailPage = () => {
         if (whitelistData) {
           await removeFromWhitelist(whitelistData.id);
           setIsInWhitelist(false);
-          toast.success("Removed from wishlist");
+          ToastUtility.success("Removed from wishlist");
         }
       } else {
         await addToWhitelist(book.id);
         setIsInWhitelist(true);
-        toast.success("Added to wishlist");
+        ToastUtility.success("Added to wishlist");
       }
       setWishlistModal({ isOpen: false, action: null });
     } catch (err) {
       console.error("Error updating wishlist:", err);
-      toast.error(err.message || "Failed to update wishlist");
+      ToastUtility.error(err.message || "Failed to update wishlist");
     } finally {
       setActionLoading(false);
     }
@@ -300,6 +296,7 @@ const BookDetailPage = () => {
       let result;
       if (editingReview) {
         result = await updateReview(editingReview.id, reviewData);
+        console.log("The result is", result);
       } else {
         result = await createReview(reviewData);
       }
@@ -307,17 +304,17 @@ const BookDetailPage = () => {
       if (result.success) {
         setShowReviewForm(false);
         setEditingReview(null);
-        toast.success(
+        ToastUtility.success(
           editingReview
             ? "Review updated successfully"
             : "Review submitted successfully"
         );
       } else {
-        toast.error("Failed to submit review");
+        ToastUtility.error("Failed to submit review");
       }
     } catch (err) {
       console.error("Error submitting review:", err);
-      toast.error(err.message || "Failed to submit review");
+      ToastUtility.error(err.message || "Failed to submit review");
     }
   };
 
@@ -334,13 +331,13 @@ const BookDetailPage = () => {
     try {
       const result = await deleteReview(reviewDeleteModal.reviewId);
       if (result.success) {
-        toast.success("Review deleted successfully");
+        ToastUtility.success("Review deleted successfully");
       } else {
-        toast.error("Failed to delete review");
+        ToastUtility.error("Failed to delete review");
       }
     } catch (err) {
       console.error("Error deleting review:", err);
-      toast.error(err.message || "Failed to delete review");
+      ToastUtility.error(err.message || "Failed to delete review");
     } finally {
       setReviewDeleteModal({ isOpen: false, reviewId: null });
     }
@@ -350,6 +347,15 @@ const BookDetailPage = () => {
     (review) => isAuthenticated && user?.id === review.userId
   );
   const canReview = isAuthenticated && !hasUserReviewed;
+
+  // Helper function to check if current user owns a review
+  const isUserReview = (review) => {
+    if (!isAuthenticated || !user || !user.id || !review.userId) {
+      return false;
+    }
+    // Convert both to strings for comparison to avoid type mismatch
+    return String(user.id) === String(review.userId);
+  };
 
   if (isLoading) {
     return (
@@ -623,16 +629,18 @@ const BookDetailPage = () => {
 
                     <div className="flex gap-3">
                       <button
-                        onClick={handleAddToCartClick}
-                        disabled={book.stockQuantity <= 0}
+                        onClick={handleAddToCart}
+                        disabled={book.stockQuantity <= 0 || isAddingToCart}
                         className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-                          book.stockQuantity > 0
+                          book.stockQuantity > 0 && !isAddingToCart
                             ? "bg-red-600 text-white hover:bg-red-700 shadow-lg hover:shadow-xl"
                             : "bg-gray-200 text-gray-500 cursor-not-allowed"
                         }`}
                       >
                         <ShoppingCart className="w-5 h-5" />
-                        {book.stockQuantity > 0
+                        {isAddingToCart
+                          ? "Adding to Cart..."
+                          : book.stockQuantity > 0
                           ? "Add to Cart"
                           : "Out of Stock"}
                       </button>
@@ -767,14 +775,36 @@ const BookDetailPage = () => {
                         Customer Reviews
                       </h3>
                       <div className="flex gap-3">
-                        {!showReviewForm && canReview && (
-                          <button
-                            onClick={handleWriteReviewClick}
-                            className="inline-flex items-center px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                          >
-                            <Star className="w-5 h-5 mr-2" />
-                            Write a Review
-                          </button>
+                        {!showReviewForm && (
+                          <>
+                            {canReview ? (
+                              <button
+                                onClick={handleWriteReviewClick}
+                                className="inline-flex items-center px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                <Star className="w-5 h-5 mr-2" />
+                                Write a Review
+                              </button>
+                            ) : (
+                              <>
+                                {!isAuthenticated ? (
+                                  <button
+                                    onClick={handleWriteReviewClick}
+                                    className="inline-flex items-center px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                                  >
+                                    <Star className="w-5 h-5 mr-2" />
+                                    Sign in to Review
+                                  </button>
+                                ) : (
+                                  hasUserReviewed && (
+                                    <span className="text-gray-600 italic">
+                                      You've already reviewed this book
+                                    </span>
+                                  )
+                                )}
+                              </>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -884,49 +914,48 @@ const BookDetailPage = () => {
                                   />
                                 </div>
 
-                                {isAuthenticated &&
-                                  user?.id === review.userId && (
-                                    <div className="flex gap-2">
-                                      <button
-                                        onClick={() => handleEditReview(review)}
-                                        className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                                {isUserReview(review) && (
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handleEditReview(review)}
+                                      className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                                    >
+                                      <svg
+                                        className="w-5 h-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
                                       >
-                                        <svg
-                                          className="w-5 h-5"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                          />
-                                        </svg>
-                                      </button>
-                                      <button
-                                        onClick={() =>
-                                          handleDeleteClick(review.id)
-                                        }
-                                        className="p-2 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="2"
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                        />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteClick(review.id)
+                                      }
+                                      className="p-2 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                                    >
+                                      <svg
+                                        className="w-5 h-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
                                       >
-                                        <svg
-                                          className="w-5 h-5"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                          />
-                                        </svg>
-                                      </button>
-                                    </div>
-                                  )}
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="2"
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                )}
                               </div>
 
                               <p className="text-gray-700 leading-relaxed">
@@ -956,13 +985,34 @@ const BookDetailPage = () => {
                         <p className="text-gray-500 text-lg mb-4">
                           No reviews yet for this book
                         </p>
-                        {canReview && !showReviewForm && (
-                          <button
-                            onClick={handleWriteReviewClick}
-                            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                          >
-                            Be the First to Review
-                          </button>
+                        {!showReviewForm && (
+                          <>
+                            {canReview ? (
+                              <button
+                                onClick={handleWriteReviewClick}
+                                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Be the First to Review
+                              </button>
+                            ) : (
+                              <>
+                                {!isAuthenticated ? (
+                                  <button
+                                    onClick={handleWriteReviewClick}
+                                    className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                                  >
+                                    Sign in to Write First Review
+                                  </button>
+                                ) : (
+                                  hasUserReviewed && (
+                                    <p className="text-gray-600 italic">
+                                      You've already reviewed this book
+                                    </p>
+                                  )
+                                )}
+                              </>
+                            )}
+                          </>
                         )}
                       </div>
                     )}
@@ -1034,18 +1084,6 @@ const BookDetailPage = () => {
           </div>
         )}
       </div>
-
-      {/* Add to Cart Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={addToCartModal.isOpen}
-        onClose={() => setAddToCartModal({ isOpen: false })}
-        onConfirm={confirmAddToCart}
-        title="Add to Cart"
-        message={`Are you sure you want to add ${quantity} copy(s) of "${book.title}" to your cart?`}
-        confirmText="Add to Cart"
-        confirmClass="bg-red-600 hover:bg-red-700"
-        isLoading={actionLoading}
-      />
 
       {/* Wishlist Confirmation Modal */}
       <ConfirmationModal

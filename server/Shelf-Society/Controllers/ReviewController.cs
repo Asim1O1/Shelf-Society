@@ -57,7 +57,9 @@ namespace Shelf_Society.Controllers
           BookId = r.BookId,
           BookTitle = book.Title,
           BookImageUrl = book.ImageUrl,
+          UserId = r.UserId,
           UserName = $"{r.User.FirstName} {r.User.LastName}",
+          Email = r.User.Email,
           Rating = r.Rating,
           Comment = r.Comment,
           CreatedAt = r.CreatedAt

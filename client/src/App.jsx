@@ -20,7 +20,6 @@ import ToastNotification from "./components/common/ToastNotification";
 import StaffLayout from "./layouts/StaffLayout";
 import AdminBookManagePage from "./pages/admin/AdminBookManagePage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminOrderManagement from "./pages/admin/AdminOrderManagement";
 import AnnouncementManagement from "./pages/admin/AnnounceManagement";
 import DiscountManagement from "./pages/admin/DiscountManagement";
 import StaffManagement from "./pages/admin/StaffManagement";
@@ -174,14 +173,7 @@ function App() {
                 </AdminStaffPublicRoute>
               }
             />
-            <Route
-              path="/profile"
-              element={
-                <AdminStaffPublicRoute>
-                  <div>Member Profile Page</div>
-                </AdminStaffPublicRoute>
-              }
-            />
+
             <Route
               path="/my-orders"
               element={
@@ -225,7 +217,7 @@ function App() {
             <Route path="staff" element={<StaffManagement />} />
             <Route path="staff/create" element={<CreateStaff />} />
             <Route path="staff/edit/:id" element={<EditStaffForm />} />
-            <Route path="orders" element={<AdminOrderManagement />} />
+
             <Route path="discounts" element={<DiscountManagement />} />
             <Route path="discounts/create" element={<CreateDiscount />} />
             <Route path="discounts/edit/:id" element={<EditDiscount />} />
@@ -243,14 +235,9 @@ function App() {
           {/* Staff Routes */}
           <Route path="/staff" element={<StaffLayout />}>
             <Route index element={<StaffDashboard />} />
-<<<<<<< HEAD
-            <Route path="orders" element={<StaffOrdersList />} />
-            <Route path="orders/:id" element={<StaffOrderDetails />} />
-=======
             <Route path="orders" element={<StaffOrdersList />} />{" "}
             {/* Added Orders List page */}
             <Route path="orders/:id" element={<StaffOrderDetails />} />{" "}
->>>>>>> c2e8d12 (multiple UI updates, duplicate notification display bug fixed)
           </Route>
 
           {/* Role-Based Redirection Route */}

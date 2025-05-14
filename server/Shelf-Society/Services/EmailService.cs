@@ -1,7 +1,11 @@
 // Services/EmailService.cs
 using Microsoft.Extensions.Configuration;
+using Shelf_Society.Models.DTOs;
+using Shelf_Society.Models.DTOs.Order;
 using Shelf_Society.Models.Entities;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
@@ -11,7 +15,7 @@ namespace Shelf_Society.Services
 {
   public interface IEmailService
   {
-    Task SendOrderConfirmationEmailAsync(Order order, User user);
+    Task SendOrderConfirmationEmailAsync(Order order, User user, List<OrderItemDetailDTO> orderItems = null);
   }
 
   public class EmailService : IEmailService
@@ -23,7 +27,7 @@ namespace Shelf_Society.Services
       _configuration = configuration;
     }
 
-    public async Task SendOrderConfirmationEmailAsync(Order order, User user)
+    public async Task SendOrderConfirmationEmailAsync(Order order, User user, List<OrderItemDetailDTO> orderItems = null)
     {
       try
       {
@@ -33,20 +37,44 @@ namespace Shelf_Society.Services
         Console.WriteLine($"Order Date: {order.OrderDate}");
         Console.WriteLine($"Claim Code: {order.ClaimCode}");
         Console.WriteLine($"Customer: {user.FirstName} {user.LastName} ({user.Email})");
-        Console.WriteLine($"Total Items: {order.Items.Count}");
-        Console.WriteLine($"Subtotal: ${order.TotalAmount:F2}");
 
-        if (order.DiscountPercentage > 0)
+        // Log items from the passed orderItems (if provided) or from order.Items
+        if (orderItems != null && orderItems.Any())
         {
-          Console.WriteLine($"Discount: {order.DiscountPercentage}% (-${order.DiscountAmount:F2})");
+          Console.WriteLine($"Total Items: {orderItems.Count}");
+          Console.WriteLine($"Subtotal: ${order.TotalAmount:F2}");
+
+          if (order.DiscountPercentage > 0)
+          {
+            Console.WriteLine($"Discount: {order.DiscountPercentage}% (-${order.DiscountAmount:F2})");
+          }
+
+          Console.WriteLine($"Final Amount: ${order.FinalAmount:F2}");
+          Console.WriteLine("--------- Order Items ---------");
+
+          foreach (var item in orderItems)
+          {
+            Console.WriteLine($"{item.Title} x {item.Quantity} @ ${item.Price:F2} = ${item.Subtotal:F2}");
+          }
         }
-
-        Console.WriteLine($"Final Amount: ${order.FinalAmount:F2}");
-        Console.WriteLine("--------- Order Items ---------");
-
-        foreach (var item in order.Items)
+        else if (order.Items != null && order.Items.Any())
         {
+          Console.WriteLine($"Total Items: {order.Items.Count}");
+          Console.WriteLine($"Subtotal: ${order.TotalAmount:F2}");
 
+          if (order.DiscountPercentage > 0)
+          {
+            Console.WriteLine($"Discount: {order.DiscountPercentage}% (-${order.DiscountAmount:F2})");
+          }
+
+          Console.WriteLine($"Final Amount: ${order.FinalAmount:F2}");
+          Console.WriteLine("--------- Order Items ---------");
+
+          foreach (var item in order.Items)
+          {
+            var bookTitle = item.Book?.Title ?? "Unknown Book";
+            Console.WriteLine($"{bookTitle} x {item.Quantity} @ ${item.Price:F2} = ${item.Subtotal:F2}");
+          }
         }
 
         Console.WriteLine("======================================");
@@ -71,7 +99,7 @@ namespace Shelf_Society.Services
         {
           From = new MailAddress(senderEmail, senderName),
           Subject = "Your Order Confirmation - Shelf Society",
-          Body = GenerateOrderConfirmationEmail(order, user),
+          Body = GenerateOrderConfirmationEmail(order, user, orderItems),
           IsBodyHtml = true,
         };
 
@@ -89,7 +117,7 @@ namespace Shelf_Society.Services
       }
     }
 
-    private string GenerateOrderConfirmationEmail(Order order, User user)
+    public string GenerateOrderConfirmationEmail(Order order, User user, List<OrderItemDetailDTO> orderItems = null)
     {
       var sb = new StringBuilder();
 
@@ -111,12 +139,33 @@ namespace Shelf_Society.Services
       sb.AppendLine("<th style='padding: 8px; text-align: right; border: 1px solid #ddd;'>Subtotal</th>");
       sb.AppendLine("</tr>");
 
-      foreach (var item in order.Items)
+      // Use the orderItems parameter if provided, otherwise fall back to order.Items
+      if (orderItems != null && orderItems.Any())
       {
-        sb.AppendLine("<tr>");
+        foreach (var item in orderItems)
+        {
+          sb.AppendLine("<tr>");
+          sb.AppendLine($"<td style='padding: 8px; text-align: left; border: 1px solid #ddd;'>{item.Title}</td>");
+          sb.AppendLine($"<td style='padding: 8px; text-align: left; border: 1px solid #ddd;'>{item.Quantity}</td>");
+          sb.AppendLine($"<td style='padding: 8px; text-align: right; border: 1px solid #ddd;'>${item.Price:F2}</td>");
+          sb.AppendLine($"<td style='padding: 8px; text-align: right; border: 1px solid #ddd;'>${item.Subtotal:F2}</td>");
+          sb.AppendLine("</tr>");
+        }
+      }
+      else if (order.Items != null && order.Items.Any())
+      {
+        foreach (var item in order.Items)
+        {
+          // Access the Book's Title here
+          var bookTitle = item.Book?.Title ?? "Unknown Book"; // Handle the case where the Book is null
 
-        sb.AppendLine($"<td style='padding: 8px; text-align: right; border: 1px solid #ddd;'>${item.Subtotal:F2}</td>");
-        sb.AppendLine("</tr>");
+          sb.AppendLine("<tr>");
+          sb.AppendLine($"<td style='padding: 8px; text-align: left; border: 1px solid #ddd;'>{bookTitle}</td>");
+          sb.AppendLine($"<td style='padding: 8px; text-align: left; border: 1px solid #ddd;'>{item.Quantity}</td>");
+          sb.AppendLine($"<td style='padding: 8px; text-align: right; border: 1px solid #ddd;'>${item.Price:F2}</td>");
+          sb.AppendLine($"<td style='padding: 8px; text-align: right; border: 1px solid #ddd;'>${item.Subtotal:F2}</td>");
+          sb.AppendLine("</tr>");
+        }
       }
 
       sb.AppendLine("</table>");

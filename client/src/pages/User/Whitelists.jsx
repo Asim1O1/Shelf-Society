@@ -1,6 +1,5 @@
 // src/pages/WhitelistPage.jsx
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
 
 import {
   AlertCircle,
@@ -19,6 +18,7 @@ import Navbar from "../../components/common/NavBar";
 import Pagination from "../../components/common/Pagination";
 import useCartStore from "../../stores/useCartStore";
 import useWhitelist from "../../stores/useWhitelist";
+import ToastUtility from "../../utils/ToastUtility";
 
 const WhitelistPage = () => {
   const {
@@ -38,10 +38,10 @@ const WhitelistPage = () => {
     try {
       setAddingToCartId(bookId);
       await addToCart(bookId, 1);
-      toast.success(`Added "${title}" to cart`);
+      ToastUtility.success(`Added "${title}" to cart`);
     } catch (err) {
       console.error("Error adding to cart:", err);
-      toast.error("Failed to add book to cart");
+      ToastUtility.error("Failed to add book to cart");
     } finally {
       setAddingToCartId(null);
     }
@@ -51,10 +51,10 @@ const WhitelistPage = () => {
     try {
       setRemovingItemId(itemId);
       await removeFromWhitelist(itemId);
-      toast.success(`Removed "${title}" from wishlist`);
+      ToastUtility.success(`Removed "${title}" from wishlist`);
     } catch (err) {
       console.error("Error removing from wishlist:", err);
-      toast.error("Failed to remove from wishlist");
+      ToastUtility.error("Failed to remove from wishlist");
     } finally {
       setRemovingItemId(null);
     }

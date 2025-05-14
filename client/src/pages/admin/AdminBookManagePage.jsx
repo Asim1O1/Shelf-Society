@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import DeleteConfirmModal from "../../components/admin/DeleteConfirmModal";
@@ -137,10 +137,12 @@ const AdminBookManagePage = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Manage Books</h1>
-            <p className="text-gray-600">Add, edit, and manage your book inventory</p>
+            <p className="text-gray-600">
+              Add, edit, and manage your book inventory
+            </p>
           </div>
           <Link
-            to="/books/create"
+            to="/admin/books/create"
             className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-6 py-3 rounded-lg font-medium hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-sm hover:shadow-md"
           >
             Add New Book
@@ -177,7 +179,9 @@ const AdminBookManagePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Genre Filter */}
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">Genre</label>
+              <label className="block mb-2 text-sm font-medium text-gray-700">
+                Genre
+              </label>
               <select
                 value={filters.genre || ""}
                 onChange={(e) =>
@@ -199,7 +203,9 @@ const AdminBookManagePage = () => {
 
             {/* Language Filter */}
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">Language</label>
+              <label className="block mb-2 text-sm font-medium text-gray-700">
+                Language
+              </label>
               <select
                 value={filters.language || ""}
                 onChange={(e) =>
@@ -249,7 +255,9 @@ const AdminBookManagePage = () => {
 
             {/* Sort By */}
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">Sort By</label>
+              <label className="block mb-2 text-sm font-medium text-gray-700">
+                Sort By
+              </label>
               <select
                 value={filters.sortBy || ""}
                 onChange={handleSortChange}
@@ -272,8 +280,10 @@ const AdminBookManagePage = () => {
         {selectedBooks.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between border border-gray-100">
             <div>
-              <span className="font-medium text-gray-900">{selectedBooks.length}</span> books
-              selected
+              <span className="font-medium text-gray-900">
+                {selectedBooks.length}
+              </span>{" "}
+              books selected
             </div>
             <div className="relative">
               <button
@@ -313,7 +323,7 @@ const AdminBookManagePage = () => {
         {!isLoading && (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-100">
+              <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th
@@ -325,7 +335,7 @@ const AdminBookManagePage = () => {
                           type="checkbox"
                           checked={selectAll}
                           onChange={() => setSelectAll(!selectAll)}
-                          className="h-4 w-4 text-gray-600 focus:ring-gray-500 border-gray-300 rounded transition-colors"
+                          className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded transition-colors cursor-pointer"
                         />
                       </div>
                     </th>
@@ -361,27 +371,24 @@ const AdminBookManagePage = () => {
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                    >
-                      Rating
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                      className="px-6 py-4 text-right text-xs font-medium text-gray-600 uppercase tracking-wider"
                     >
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
+                <tbody className="bg-white divide-y divide-gray-200">
                   {books.map((book) => (
-                    <tr key={book.id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={book.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={selectedBooks.includes(book.id)}
                           onChange={() => handleSelectBook(book.id)}
-                          className="h-4 w-4 text-gray-600 focus:ring-gray-500 border-gray-300 rounded transition-colors"
+                          className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded transition-colors cursor-pointer"
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -428,43 +435,47 @@ const AdminBookManagePage = () => {
                               : "bg-green-100 text-green-800"
                           }`}
                         >
-                          {book.stockQuantity}
+                          {book.stockQuantity} in stock
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="text-sm font-medium text-gray-900">
-                            {book.rating.toFixed(1)}
-                          </div>
-                          <span className="ml-1 text-yellow-400">
-                            <svg
-                              className="w-4 h-4"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
-                            </svg>
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-3">
-                          <Link
-                            to={`/books/${book.id}`}
-                            className="text-gray-600 hover:text-gray-800 transition-colors"
-                          >
-                            View
-                          </Link>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-3">
                           <Link
                             to={`/admin/books/edit/${book.id}`}
-                            className="text-indigo-600 hover:text-indigo-800 transition-colors"
+                            className="text-blue-600 hover:text-blue-900 transition-colors duration-200 flex items-center"
                           >
+                            <svg
+                              className="w-4 h-4 mr-1"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
                             Edit
                           </Link>
                           <button
                             onClick={() => setConfirmDelete(book.id)}
-                            className="text-red-600 hover:text-red-800 transition-colors"
+                            className="text-red-600 hover:text-red-900 transition-colors duration-200 flex items-center"
                           >
+                            <svg
+                              className="w-4 h-4 mr-1"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
                             Delete
                           </button>
                         </div>
@@ -476,7 +487,7 @@ const AdminBookManagePage = () => {
             </div>
 
             {books.length === 0 && !isLoading && (
-              <div className="text-center py-12">
+              <div className="text-center py-16">
                 <svg
                   className="mx-auto h-12 w-12 text-gray-400"
                   fill="none"
@@ -491,8 +502,12 @@ const AdminBookManagePage = () => {
                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                   />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No books found</h3>
-                <p className="mt-1 text-sm text-gray-500">Try adjusting your filters or search terms.</p>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  No books found
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Try adjusting your filters or search terms.
+                </p>
               </div>
             )}
           </div>

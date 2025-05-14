@@ -19,7 +19,6 @@ public class BookController : ControllerBase
   {
     _context = context;
   }
-
   [HttpGet]
   public async Task<ActionResult<ResponseHelper<PaginationHelper<BookResponseDTO>>>> GetBooks(
       [FromQuery] int pageNumber = 1,
@@ -34,8 +33,9 @@ public class BookController : ControllerBase
   {
     // Start with base query
     var query = _context.Books
-    .Include(b => b.AdditionalImages) // Include additional images
-    .AsQueryable();
+        .Include(b => b.AdditionalImages) // Include additional images
+        .Include(b => b.Reviews) // Add this line to include reviews
+        .AsQueryable();
 
     // Apply filters if provided
     if (!string.IsNullOrEmpty(search))
@@ -95,7 +95,7 @@ public class BookController : ControllerBase
         query = query.OrderByDescending(b => b.PublicationDate);
         break;
       case "rating_desc":
-        query = query.OrderByDescending(b => b.Rating);
+        query = query.OrderByDescending(b => b.Reviews.Any() ? b.Reviews.Average(r => r.Rating) : 0);
         break;
       default:
         query = query.OrderBy(b => b.Title); // Default sorting
@@ -110,7 +110,7 @@ public class BookController : ControllerBase
     var activeDiscounts = await _context.Discounts
         .Where(d => d.StartDate <= now && d.EndDate >= now)
         .ToDictionaryAsync(d => d.BookId, d => d);
-    // Map to DTOs
+
     // Map to DTOs
     var bookDtos = pagedBooks.Items.Select(book => new BookResponseDTO
     {
@@ -124,7 +124,13 @@ public class BookController : ControllerBase
       Genre = book.Genre,
       Language = book.Language,
       StockQuantity = book.StockQuantity,
-      Rating = book.Rating,
+
+      // Calculate the average rating from reviews
+      Rating = book.Reviews.Any() ? book.Reviews.Average(r => r.Rating) : 0,
+
+      // Add review count
+      ReviewCount = book.Reviews.Count(),
+
       PublicationDate = book.PublicationDate,
       Publisher = book.Publisher,
       CreatedAt = book.CreatedAt,
@@ -154,8 +160,8 @@ public class BookController : ControllerBase
         pagedBooks.PageSize);
 
     string message = pagedBooks.TotalCount > 0
-  ? "Books retrieved successfully"
-  : "No books found matching the criteria";
+        ? "Books retrieved successfully"
+        : "No books found matching the criteria";
 
     return Ok(new ResponseHelper<PaginationHelper<BookResponseDTO>>
     {
@@ -164,7 +170,6 @@ public class BookController : ControllerBase
       Data = pagedResponse
     });
   }
-
   [HttpGet("genres")]
   public async Task<ActionResult<ResponseHelper<List<GenreDTO>>>> GetGenres()
   {

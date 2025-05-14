@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import DeleteConfirmModal from "../../components/admin/DeleteConfirmModal";
-import StatCard from "../../components/admin/StatCard";
 import useAuthStore from "../../stores/useAuthStore";
 import useBookStore from "../../stores/useBookStore";
 import showToast from "../../utils/ToastUtility";
@@ -384,7 +383,7 @@ const AdminDashboard = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-3">
                         <Link
-                          to={`/books/edit/${book.id}`}
+                          to={`/admin/books/edit/${book.id}`}
                           className="text-gray-600 hover:text-gray-800 transition-colors"
                         >
                           Edit
